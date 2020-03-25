@@ -4,7 +4,6 @@ Created on Sat Mar 21 23:22:09 2020
 
 @author: lasse
 """
-# HEJ MED
 
 import numpy as np
 import matplotlib.pyplot as plt
