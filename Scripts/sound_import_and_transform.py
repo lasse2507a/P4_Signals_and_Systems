@@ -13,20 +13,34 @@ import scipy as sp
 filename = "sound/jacob_snak.wav"
 
 #Uddrager samplingsfrekvens og data fra lydfil
-fs, data = sp.io.wavfile.read(filename)
-time = len(data)/fs
+fs, data1 = sp.io.wavfile.read(filename)
+time = len(data1)/fs
+highest = np.amax(data1)
+data = data1/highest
+
 #Downsampling
-down = 10
-signal = sp.signal.decimate(data, down)
+down = 5
+signal = sp.signal.decimate(data, down, ftype='fir')
 
 #Short time Fourier transform
-f, t, STFT  = sp.signal.stft(signal, fs/down, nperseg=1000)
+f, t, STFT  = sp.signal.stft(signal, fs/down, nperseg=256)
+
+A = STFT
 
 #to plot over time
 x_data = np.linspace(0, time, len(data))
 x_signal = np.linspace(0, time, len(signal))
 
-fft=np.fft.fft(signal)
+#fft=np.fft.fft(signal)
+
+#invert short time Fourier transform
+T, ISTFT  = sp.signal.istft(STFT, fs/down, nperseg=256)
+
+ISTFT_del = ISTFT[(ISTFT >= 1) & (ISTFT <= -1)]
+
+B = ISTFT
+sp.io.wavfile.write('modi_sound/jacob_snak_down_stft.wav', int(fs/down), ISTFT)
+
 
 
 plt.plot(x_data, data)
@@ -35,5 +49,8 @@ plt.plot(x_signal, signal)
 plt.show()
 plt.pcolormesh(t, f, np.abs(STFT))
 plt.show()
-plt.plot(np.abs(fft))
+
+
+
+
 
