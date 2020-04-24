@@ -40,7 +40,7 @@ def fsinew(J = 18, freq1 = 1300, freq2 = 2000, freq3 = 400, freq4 = 1000,
     return x_sum, t, N
 
 #Some windows (find more: https://bit.ly/2KxlMsO)
-M = 100
+M = 100     #numbers of sampels
 hamming = sp.signal.windows.hamming(M)
 boxcar = sp.signal.windows.boxcar(M)
 flattop = sp.signal.windows.flattop(M)
