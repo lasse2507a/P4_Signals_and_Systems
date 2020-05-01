@@ -83,7 +83,9 @@ def filtering(x, fir_filter):
     y = np.convolve(x, fir_filter)
     return y
 
-bandfilter = fir_bandfilter('boxcar', 12, 0.766990*2, 1.53398*2, fs = 2*np.pi)
+bandfilter = fir_bandfilter('hamming', 50, 0.766990*2, 1.53398*2, fs = 4*np.pi)
+
+#lowpass = ss.firwin(30, fs = 2*np.pi, )
 
 w, h = ss.freqz(bandfilter)
 
