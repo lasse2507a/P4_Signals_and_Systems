@@ -83,13 +83,15 @@ def filtering(x, fir_filter):
     y = np.convolve(x, fir_filter)
     return y
 
+bandfilter = fir_bandfilter('boxcar', 12, 0.766990*2, 1.53398*2, fs = 2*np.pi)
+
 
 # =============================================================================
-# Execution and Plotting
+# Plotting
 # =============================================================================
-bandfilter = fir_bandfilter('boxcar', 30, 0.766990*2, 1.53398*2, fs = 2*np.pi)
-
 plt.plot(bandfilter)
+plt.show()
+plt.plot(np.abs(np.fft.fft(bandfilter)))
 plt.show()
 
 spectrogram(fsinew(), 2**11, 'boxcar', 1024)
