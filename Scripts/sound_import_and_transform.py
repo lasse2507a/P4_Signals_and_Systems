@@ -11,7 +11,7 @@ import scipy as sp
 from scipy.io import wavfile
 
 #Navn paa lydklip
-filename = "sound/jacob_snak.wav"
+filename = "jacob_snak.wav"
 
 #Uddrager samplingsfrekvens og data fra lydfil
 fs, data1 = wavfile.read(filename)
