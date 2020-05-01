@@ -85,14 +85,29 @@ def filtering(x, fir_filter):
 
 bandfilter = fir_bandfilter('boxcar', 12, 0.766990*2, 1.53398*2, fs = 2*np.pi)
 
+w, h = ss.freqz(bandfilter)
 
 # =============================================================================
 # Plotting
 # =============================================================================
 plt.plot(bandfilter)
 plt.show()
-plt.plot(np.abs(np.fft.fft(bandfilter)))
+
+fig = plt.figure()
+plt.title('Digital filter frequency response')
+plt.plot(w, 20 * np.log10(abs(h)), 'b')
+plt.ylabel('Amplitude [dB]', color='b')
+plt.xlabel('Frequency [rad/sample]')
+ax1 = fig.add_subplot(111)
+ax2 = ax1.twinx()
+angles = np.unwrap(np.angle(h))
+plt.plot(w, angles, 'g')
+plt.ylabel('Angle (radians)', color='g')
+plt.grid()
+plt.axis('tight')
 plt.show()
+
+
 
 spectrogram(fsinew(), 2**11, 'boxcar', 1024)
 
