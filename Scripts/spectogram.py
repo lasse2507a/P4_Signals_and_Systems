@@ -39,14 +39,14 @@ def fsinew(J = 18, freq1 = 1300, freq2 = 2000, freq3 = 400, freq4 = 1000,
     x_sum = x1 + x2 + x3 + x4
     return x_sum, t, N
 
+#Sample frequency
+fs = 10e3       
+
 #Some windows (find more: https://bit.ly/2KxlMsO)
-M = 100     #numbers of sampels
+M = int(20e-3*fs)     #numbers of sampels
 hamming = sp.signal.windows.hamming(M)
 boxcar = sp.signal.windows.boxcar(M)
 flattop = sp.signal.windows.flattop(M)
-
-#Sample frequency
-fs = 10e3       
 
 #The pure signal
 y, time, N = fsinew()
@@ -55,9 +55,10 @@ y, time, N = fsinew()
 noise = np.random.normal(0, 1, int(N)) 
 y_noise = y + noise
 
+
 #STFT
 f, t, STFT = sp.signal.stft(y_noise, fs = fs, window='hamming', nperseg=1000)
-
+A = STFT
 #Plotting
 plt.pcolormesh(t, f, np.abs(STFT)) 
 plt.title('STFT Magnitude')
