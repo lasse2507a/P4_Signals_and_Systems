@@ -8,12 +8,19 @@ Created on Sat Mar 21 23:22:09 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal as ss
+import librosa
+import librosa.display
 
 
 # =============================================================================
 # Import of Data
 # =============================================================================
 
+filename = 'sound/jacob_snak.wav'
+y, sr = librosa.load(filename)
+# trim silent edges
+whale_song, _ = librosa.effects.trim(y)
+#librosa.display.waveplot(whale_song, sr=sr)
 
 # =============================================================================
 # Synthetic Data Generation
@@ -62,12 +69,25 @@ def window(window_name, M):
 
 
 def spectrogram(x, sampling_frequency, window, nperseg):
-    f, t, STFT = ss.stft(x, sampling_frequency, window, nperseg)
-    plt.pcolormesh(t, f, np.abs(STFT)) 
+    f, t, STFT = ss.stft(x, sampling_frequency, window, nperseg)    
+    plt.pcolormesh(t, f, np.abs(STFT), vmin = 0) 
     plt.title('STFT Magnitude')
     plt.ylabel('Frequency [Hz]')
     plt.xlabel('Time [sec]')
+    cb=plt.colorbar(orientation="horizontal")
+    cb.set_label("dB")
+    plt.tight_layout()
     plt.show()
+    
+def spectrogram_lib(data, sr, n_fft=2048, hop_length=512, window='hann'):
+    D = np.abs(librosa.stft(data, n_fft=n_fft,  hop_length=hop_length, window=window))
+    #f, t, K = ss.stft(data, fs, 'hamming', n_fft)
+    #librosa.display.specshow(D, sr=sr, x_axis='time', y_axis='linear')
+    DB = librosa.amplitude_to_db(D, ref=np.max)
+    librosa.display.specshow(DB, sr=sr, hop_length=hop_length, x_axis='time', y_axis='log')
+    plt.colorbar(format='%+2.0f dB')
+    plt.show()
+
     
 
 def fir_bandfilter(window, M, fc_low, fc_high, fs):
@@ -92,27 +112,37 @@ w, h = ss.freqz(bandfilter)
 # =============================================================================
 # Plotting
 # =============================================================================
-plt.plot(bandfilter)
-plt.show()
-
-fig = plt.figure()
-plt.title('Digital filter frequency response')
-plt.plot(w, 20 * np.log10(abs(h)), 'b')
-plt.ylabel('Amplitude [dB]', color='b')
-plt.xlabel('Frequency [rad/sample]')
-ax1 = fig.add_subplot(111)
-ax2 = ax1.twinx()
-angles = np.unwrap(np.angle(h))
-plt.plot(w, angles, 'g')
-plt.ylabel('Angle (radians)', color='g')
-plt.grid()
-plt.axis('tight')
-plt.show()
 
 
+spectrogram(y, sr, 'boxcar', 1024)
+
+spectrogram_lib(y, sr)
 
 spectrogram(fsinew(), 2**11, 'boxcar', 1024)
 
-x_filtered = filtering(fsinew(), bandfilter)
+spectrogram_lib(fsinew(), 2**11)
 
-spectrogram(x_filtered, 2**11, 'boxcar', 1024)
+#plt.plot(bandfilter)
+#plt.show()
+#
+#fig = plt.figure()
+#plt.title('Digital filter frequency response')
+#plt.plot(w, 20 * np.log10(abs(h)), 'b')
+#plt.ylabel('Amplitude [dB]', color='b')
+#plt.xlabel('Frequency [rad/sample]')
+#ax1 = fig.add_subplot(111)
+#ax2 = ax1.twinx()
+#angles = np.unwrap(np.angle(h))
+#plt.plot(w, angles, 'g')
+#plt.ylabel('Angle (radians)', color='g')
+#plt.grid()
+#plt.axis('tight')
+#plt.show()
+
+
+
+#spectrogram(fsinew(), 2**11, 'boxcar', 1024)
+#
+#x_filtered = filtering(fsinew(), bandfilter)
+#
+#spectrogram(x_filtered, 2**11, 'boxcar', 1024)
