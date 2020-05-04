@@ -16,7 +16,7 @@ import librosa.display
 # Import of Data
 # =============================================================================
 
-filename = 'sound/jacob_snak.wav'
+filename = 'sound/vokaler.wav'
 y, sr = librosa.load(filename)
 # trim silent edges
 whale_song, _ = librosa.effects.trim(y)
@@ -25,14 +25,14 @@ whale_song, _ = librosa.effects.trim(y)
 # =============================================================================
 # Synthetic Data Generation
 # =============================================================================
-def sinew(J = 18, freq = 1000, phase = 0):
+def sinew(J = 12, fs = 2**11, freq = 100, phase = 0):
     """
     Signal consisting of a single sine wave with specified 
     frequencies, phases, and amount of points.
     """
     N = 2**J
-    t = np.arange(1 , N+1)
-    A = 2 * np.pi * t / N
+    t = np.arange(N)/fs
+    A = 2 * np.pi * t
     x = np.sin(A * freq + phase)
     return x
 
@@ -86,6 +86,8 @@ def spectrogram_lib(data, sr, n_fft=2048, hop_length=512, window='hann'):
     DB = librosa.amplitude_to_db(D, ref=np.max)
     librosa.display.specshow(DB, sr=sr, hop_length=hop_length, x_axis='time', y_axis='log')
     plt.colorbar(format='%+2.0f dB')
+    plt.title('Spectrogram')
+    plt.savefig('spectrogram/vokaler_{}.pdf'.format(int(n_fft)))
     plt.show()
 
     
@@ -114,13 +116,10 @@ w, h = ss.freqz(bandfilter)
 # =============================================================================
 
 
-spectrogram(y, sr, 'boxcar', 1024)
+spectrogram_lib(y, sr, window = 'hamming', n_fft=2048, hop_length=512)
+spectrogram_lib(y, sr, window = 'hamming', n_fft=2048*2, hop_length=512)
+spectrogram_lib(y, sr, window = 'hamming', n_fft=int(2048/2), hop_length=512)
 
-spectrogram_lib(y, sr)
-
-spectrogram(fsinew(), 2**11, 'boxcar', 1024)
-
-spectrogram_lib(fsinew(), 2**11)
 
 #plt.plot(bandfilter)
 #plt.show()
