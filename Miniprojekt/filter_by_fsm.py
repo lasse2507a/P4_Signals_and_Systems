@@ -68,7 +68,7 @@ def zeropad_fft(h, zeros=2**10):
 
 def plt_dB(H_pad):
     plt.figure()
-    plt.plot(H_pad)
+    plt.plot(H_pad/6)
     plt.show()
     plt.plot(np.linspace(0,9000, len(H_pad)),20*np.log10(H_pad))
     plt.ylim(-100, 100)
