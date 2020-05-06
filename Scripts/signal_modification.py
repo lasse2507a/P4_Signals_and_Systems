@@ -145,9 +145,6 @@ frq3 = 800 #2*np.pi/(2**13)*500
 frq4 = 1000 #2*np.pi/(2**13)*800
 
 spectrogram_lib(fsinew(fs = fs, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), fs, n_fft=int(2048/2), hop_length=512, window='hann')
-spectrogram_lib(fsinew(fs = fs*2, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), fs, n_fft=int(2048/2), hop_length=512, window='hann')
-
-
 
 x_filtered = filtering(fsinew(fs=fs, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), bandfilter)
 
