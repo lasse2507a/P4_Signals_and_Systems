@@ -54,7 +54,8 @@ def h(H_sampled):
     h = np.zeros(N)
     for n in range(N):
         for k in range(1, upper):
-            h[n] += (1/N)*(2*np.abs(H_sampled[k])*np.cos(2*np.pi*k*(n-alpha)/N)+H_sampled[0])
+            h[n] += (1/N)*(2*np.abs(H_sampled[k])*np.cos(2*np.pi*k*(n-alpha)/N))
+        h[n] = h[n] + H_sampled[0]*(1/N)
     return h
 
 
@@ -77,13 +78,13 @@ def plt_magnitude_dB(H_pad):
 
 H_ideal = H_ideal()
 H_sampled = H_sampled(H_ideal, 30)
-h_n = h(H_sampled)
+h = h(H_sampled)
 
 
 plt.plot(H_ideal, '*')
 plt.show()
 plt.plot(H_sampled, '*')
 plt.show()
-plt.plot(h_n, '*')
+plt.plot(h, '*')
 plt.show()
-plt_magnitude_dB(zeropad_fft(h_n))
+plt_magnitude_dB(zeropad_fft(h))
