@@ -37,14 +37,14 @@ def sinew(J = 12, fs = 2**11, freq = 100, phase = 0):
     return x
 
 
-def fsinew(J = 12, sampling_frequency = 2**11, freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 800, 
+def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 800, 
            phase1 = 0, phase2 = 0, phase3 = 0, phase4 = 0, phase5 = 0):
     """
     Signal consisting of four sine waves with specified 
     frequencies, phases, and amount of points.
     """
     N = 2**J
-    t = np.arange(N)/sampling_frequency
+    t = np.arange(N)/fs
     A = 2 * np.pi * t
     x1 = np.sin(A * freq1 + phase1)
     x2 = np.sin(A * freq2 + phase2)
@@ -87,7 +87,7 @@ def spectrogram_lib(data, sr, n_fft=2048, hop_length=512, window='hann'):
     librosa.display.specshow(DB, sr=sr, hop_length=hop_length, x_axis='time', y_axis='log')
     plt.colorbar(format='%+2.0f dB')
     plt.title('Spectrogram')
-    plt.savefig('spectrogram/vokaler_{}.pdf'.format(int(n_fft)))
+    #plt.savefig('spectrogram/vokaler_{}.pdf'.format(int(n_fft)))
     plt.show()
 
     
@@ -105,7 +105,10 @@ def filtering(x, fir_filter):
     y = np.convolve(x, fir_filter)
     return y
 
-bandfilter = fir_bandfilter('hamming', 50, 0.766990*2, 1.53398*2, fs = 4*np.pi)
+#bandfilter = fir_bandfilter('hamming', 50, 0.766990*2, 1.53398*2, fs = 4*np.pi)
+
+
+bandfilter = fir_bandfilter('hamming', 50, 500, 1000, fs = 2**13)
 
 #lowpass = ss.firwin(30, fs = 2*np.pi, )
 
@@ -116,32 +119,36 @@ w, h = ss.freqz(bandfilter)
 # =============================================================================
 
 
-spectrogram_lib(y, sr, window = 'hamming', n_fft=2048, hop_length=512)
-spectrogram_lib(y, sr, window = 'hamming', n_fft=2048*2, hop_length=512)
-spectrogram_lib(y, sr, window = 'hamming', n_fft=int(2048/2), hop_length=512)
+plt.plot(bandfilter)
+plt.show()
+
+fig = plt.figure()
+plt.title('Digital filter frequency response')
+plt.plot(w, 20 * np.log10(abs(h)), 'b')
+plt.ylabel('Amplitude [dB]', color='b')
+plt.xlabel('Frequency [rad/sample]')
+ax1 = fig.add_subplot(111)
+ax2 = ax1.twinx()
+angles = np.unwrap(np.angle(h))
+plt.plot(w, angles, 'g')
+plt.ylabel('Angle (radians)', color='g')
+plt.grid()
+plt.axis('tight')
+plt.show()
 
 
-#plt.plot(bandfilter)
-#plt.show()
-#
-#fig = plt.figure()
-#plt.title('Digital filter frequency response')
-#plt.plot(w, 20 * np.log10(abs(h)), 'b')
-#plt.ylabel('Amplitude [dB]', color='b')
-#plt.xlabel('Frequency [rad/sample]')
-#ax1 = fig.add_subplot(111)
-#ax2 = ax1.twinx()
-#angles = np.unwrap(np.angle(h))
-#plt.plot(w, angles, 'g')
-#plt.ylabel('Angle (radians)', color='g')
-#plt.grid()
-#plt.axis('tight')
-#plt.show()
+fs = 2**13 #4*np.pi 
+
+frq1 = 1500 #2*np.pi/(2**13)*100
+frq2 = 300 #2*np.pi/(2**13)*300
+frq3 = 800 #2*np.pi/(2**13)*500
+frq4 = 1000 #2*np.pi/(2**13)*800
+
+spectrogram_lib(fsinew(fs = fs, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), fs, n_fft=int(2048/2), hop_length=512, window='hann')
+spectrogram_lib(fsinew(fs = fs*2, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), fs, n_fft=int(2048/2), hop_length=512, window='hann')
 
 
 
-#spectrogram(fsinew(), 2**11, 'boxcar', 1024)
-#
-#x_filtered = filtering(fsinew(), bandfilter)
-#
-#spectrogram(x_filtered, 2**11, 'boxcar', 1024)
+x_filtered = filtering(fsinew(fs=fs, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), bandfilter)
+
+spectrogram_lib(x_filtered, fs, n_fft=int(2048/2), hop_length=512, window='hann')
