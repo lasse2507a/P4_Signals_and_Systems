@@ -7,7 +7,6 @@ Created on Wed May  6 09:37:45 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import signal as ss
 
 
 
@@ -28,20 +27,20 @@ def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 8
     return x_sum
 
 
-def H_ideal(fs = 18000, cutoff = 5000):
+def H_ideal(fs = 8000, cutoff = 1000):
     ones = np.ones(cutoff)
-    zeros = np.zeros(fs-cutoff-cutoff)
-    data = np.concatenate((ones, zeros, ones))
-    return data#[0:int(len(data)/2)]
+    zeros = np.zeros(fs-2*cutoff)
+    H_ideal = np.concatenate((ones, zeros, ones))
+    return H_ideal
 
 
-def H_sampled(H_ideal, N):    
+def H_sampled(H_ideal, N):
     T = int(len(H_ideal)/(N))
-    sample = np.zeros(N)
-    sample[0] = H_ideal[0]
+    H_sampled = np.zeros(N)
+    H_sampled[0] = H_ideal[0]
     for i in range(1, N):
-        sample[i] = H_ideal[i*T]
-    return sample
+        H_sampled[i] = H_ideal[i*T]
+    return H_sampled
 
 
 def h(H_sampled):
@@ -50,34 +49,36 @@ def h(H_sampled):
         upper = int(N/2-1)
     else:
         upper = int((N-1)/2)
-        
+
     alpha = (N-1)/2
     h = np.zeros(N)
     for n in range(N):
-        for i in range(upper):
-            h[n] += 2*abs(H_sampled[i])*np.cos(2*np.pi*i*(n-alpha)/N)+H_sampled[0]
-    return (1/N)*h
+        for k in range(1, upper):
+            h[n] += (1/N)*(2*np.abs(H_sampled[k])*np.cos(2*np.pi*k*(n-alpha)/N)+H_sampled[0])
+    return h
 
 
-def zeropad_fft(h, zeros=2**10):
+def zeropad_fft(h, zeros=2**13):
     h_pad = np.zeros(zeros)
     h_pad[0:len(h)] = h
     H_pad = np.abs(np.fft.fft(h_pad))
-    return H_pad[0:int(len(H_pad)/2)]
+    H_pad = H_pad[0:int(len(H_pad)/2)]
+    return H_pad
 
 
-def plt_dB(H_pad):
+def plt_magnitude_dB(H_pad):
     plt.figure()
-    plt.plot(H_pad)
+    plt.plot(np.linspace(0, 4000, len(H_pad)), H_pad)
     plt.show()
-    plt.plot(np.linspace(0,9000, len(H_pad)),20*np.log10(H_pad))
-    plt.ylim(-100, 100)
+    plt.plot(np.linspace(0, 4000, len(H_pad)),20*np.log10(H_pad))
+    plt.ylim(-100, 10)
     plt.show()
     
 
 H_ideal = H_ideal()
-H_sampled = H_sampled(H_ideal, 9)
+H_sampled = H_sampled(H_ideal, 30)
 h_n = h(H_sampled)
+
 
 plt.plot(H_ideal, '*')
 plt.show()
@@ -85,6 +86,4 @@ plt.plot(H_sampled, '*')
 plt.show()
 plt.plot(h_n, '*')
 plt.show()
-plt_dB(zeropad_fft(h_n))
-
-
+plt_magnitude_dB(zeropad_fft(h_n))
