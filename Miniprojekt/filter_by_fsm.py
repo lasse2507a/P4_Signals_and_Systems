@@ -101,7 +101,7 @@ def plt_magnitude_dB(H_pad):
 # =============================================================================
     
 
-H_omega = H_ideal(cutoff = 750)
+H_omega = H_ideal(cutoff = 1000)
 H_k, x = H_sampled(H_omega, 20)
 h = h(H_k)
 H_pad = zeropad_fft(h)
