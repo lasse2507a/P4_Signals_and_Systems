@@ -113,7 +113,7 @@ H_pad = zeropad_fft(h)
 
 # H(omega) and H(k)
 plt.figure(figsize=(10,5))
-plt.title('Ideal lowpass filter')
+plt.title('Ideal lowpass filter', fontsize = 20)
 plt.plot(H_omega, label ='$|H(\omega)$|')
 plt.plot(x, H_k, '*', label = '$|H(k)|$')
 plt.xlabel('Frequency [Hz]')
