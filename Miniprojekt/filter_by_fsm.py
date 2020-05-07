@@ -8,7 +8,9 @@ Created on Wed May  6 09:37:45 2020
 import numpy as np
 import matplotlib.pyplot as plt
 
-
+# =============================================================================
+# Synthetic Data Generation
+# =============================================================================
 
 def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 800, 
            phase1 = 0, phase2 = 0, phase3 = 0, phase4 = 0, phase5 = 0):
@@ -26,21 +28,38 @@ def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 8
     x_sum = x1 + x2 + x3 + x4
     return x_sum
 
+# =============================================================================
+# Function
+# =============================================================================
 
 def H_ideal(fs = 8000, cutoff = 1000):
     ones = np.ones(cutoff)
-    zeros = np.zeros(fs-2*cutoff)
-    H_ideal = np.concatenate((ones, zeros, ones))
+    zeros = np.zeros(fs-cutoff)
+    H_ideal = np.concatenate((ones, zeros))
     return H_ideal
+
+
+def H(fs = 8000, cutoff = 1000, a = 1000):
+    def f(x):
+        return -(1)*x + 1
+    x = np.linspace(0,1, a)
+    y = f(x)
+    ones = np.ones(cutoff)
+    zeros = np.zeros(fs-cutoff-len(x))
+    H = np.concatenate((ones, y, zeros))  
+    return H
+
 
 
 def H_sampled(H_ideal, N):
     T = int(len(H_ideal)/(N))
     H_sampled = np.zeros(N)
+    x = np.zeros(N)
     H_sampled[0] = H_ideal[0]
     for i in range(1, N):
         H_sampled[i] = H_ideal[i*T]
-    return H_sampled
+        x[i] = i*T
+    return H_sampled, x
 
 
 def h(H_sampled):
@@ -72,19 +91,65 @@ def plt_magnitude_dB(H_pad):
     plt.plot(np.linspace(0, 4000, len(H_pad)), H_pad)
     plt.show()
     plt.plot(np.linspace(0, 4000, len(H_pad)),20*np.log10(H_pad))
-    plt.ylim(-100, 10)
+    plt.plot([750, 1000, 1500], [-1, -3, -10], '*')
+    plt.ylim(-20, 10)
     plt.show()
     
 
-H_ideal = H_ideal()
-H_sampled = H_sampled(H_ideal, 30)
-h = h(H_sampled)
+# =============================================================================
+# Using functions
+# =============================================================================
+    
+
+H_omega = H_ideal(cutoff = 750)
+H_k, x = H_sampled(H_omega, 20)
+h = h(H_k)
+H_pad = zeropad_fft(h)
 
 
-plt.plot(H_ideal, '*')
-plt.show()
-plt.plot(H_sampled, '*')
-plt.show()
-plt.plot(h, '*')
-plt.show()
-plt_magnitude_dB(zeropad_fft(h))
+# =============================================================================
+# Plotting
+# =============================================================================
+
+# H(omega) and H(k)
+plt.figure(figsize=(10,5))
+plt.title('Ideal lowpass filter')
+plt.plot(H_omega, label ='$|H(\omega)$|')
+plt.plot(x, H_k, '*', label = '$|H(k)|$')
+plt.xlabel('Frequency [Hz]')
+plt.legend()
+plt.grid()
+plt.savefig('figure/ideal_sam.pdf')
+
+# Impulse response
+plt.figure(figsize = (10,5))
+plt.title('Impulse response')
+plt.plot(h, '*', label = 'Imulse response')
+plt.xlabel('Sample number')
+plt.ylabel('Amplitude')
+plt.legend()
+plt.grid()
+#plt.save('figure/impulse.pdf')
+
+# Magnitude
+plt.figure(figsize = (10,5))
+plt.title('Magnitude')
+plt.plot(np.linspace(0, 4000, len(H_pad)), H_pad, label = 'Magnitude')
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('Magnitude')
+plt.plot(1000, 1/np.sqrt(2), '*')
+plt.legend()
+plt.grid()
+#plt.save('figure/magnitude.pdf')
+
+# Frequency response
+plt.figure(figsize = (10,5))
+plt.title('Frequency response')
+plt.plot(np.linspace(0, 4000, len(H_pad)), 20*np.log10(H_pad), label = 'Frequency response $|H(f)|$')
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('$|H(f)|$ [dB]')
+plt.ylim(-100, 10)
+plt.plot([750, 1000, 1500], [-1, -3, -10], '*', label = 'Goals')
+plt.legend()
+plt.grid()
+#plt.save('figure/freq_response.pdf')
