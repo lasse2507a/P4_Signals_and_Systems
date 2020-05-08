@@ -90,7 +90,7 @@ def h(H_sampled):
     return h
 
 
-def zeropad_fft(h, zeros=2**13):
+def zeropad_fft(h, zeros=2**15):
     h_pad = np.zeros(zeros)
     h_pad[0:len(h)] = h
     H_pad = np.abs(np.fft.fft(h_pad))
@@ -322,14 +322,14 @@ plt.grid()
 #plt.subplots_adjust(hspace= 0.3)
 plt.subplot(212)
 #plt.title('Gain in dB', fontsize = 15)
-plt.plot(np.linspace(0, len(H2_pad0), len(H2_pad0)), 20*np.log10(H2_pad0), label =  'N = 11')
-plt.plot(np.linspace(0, len(H2_pad0), len(H2_pad1)), 20*np.log10(H2_pad1), label =  'N = 13')
-plt.plot(np.linspace(0, len(H2_pad0), len(H2_pad2)), 20*np.log10(H2_pad2), label =  'N = 15')
-plt.plot(np.linspace(0, len(H2_pad0), len(H2_pad3)), 20*np.log10(H2_pad3), label =  'N = 17')
+plt.plot(np.linspace(0, 4000, len(H2_pad0)), 20*np.log10(H2_pad11), label =  'N = 11')
+plt.plot(np.linspace(0, 4000, len(H2_pad1)), 20*np.log10(H2_pad13), label =  'N = 13')
+plt.plot(np.linspace(0, 4000, len(H2_pad2)), 20*np.log10(H2_pad15), label =  'N = 15')
+plt.plot(np.linspace(0, 4000, len(H2_pad3)), 20*np.log10(H2_pad17), label =  'N = 17')
 plt.xlabel('Frequency [Hz]')
 plt.ylabel('Gain [dB]')
-plt.ylim(-12, 2)
-plt.xlim(500, 2000)
+#plt.ylim(-12, 2)
+#plt.xlim(500, 2000)
 plt.plot([750], [-1], '*', label = '-1dB at 750Hz', color = 'black')
 plt.plot([1000], [-3], '*', label = '-3dB at 1000Hz', color = 'blue')
 plt.plot([1500], [-10], '*', label = '-10dB at 1500Hz', color = 'red')
@@ -339,9 +339,16 @@ plt.savefig('figure/freq_response_test.pdf')
 
 print([max5, max15, max25, max35])
 print([max11, max13, max15, max17])
-print([20*np.log10(H2_pad0[1000])+3, 20*np.log10(H2_pad1[1000])+3, \
-       20*np.log10(H2_pad2[1000])+3, 20*np.log10(H2_pad3[1000])+3])
+db_dis = [20*np.log10(H2_pad11[int((2**15)/8)]), 20*np.log10(H2_pad13[int(2**15/8)]), \
+       20*np.log10(H2_pad15[int((2**15)/8)]), 20*np.log10(H2_pad17[int(2**15/8)])]
+print([20*np.log10(H2_pad11[int((2**15)/8)]), 20*np.log10(H2_pad13[int(2**15/8)]), \
+       20*np.log10(H2_pad15[int((2**15)/8)]), 20*np.log10(H2_pad17[int(2**15/8)])])
 
+    
+    
+    
+    
+    
     
 plt.figure(figsize = (16,9))
 plt.suptitle('Frequency response', fontsize = 20)
