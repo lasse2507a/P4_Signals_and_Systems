@@ -4,12 +4,16 @@ Created on Wed May  6 09:37:45 2020
 
 @author: Jacob
 """
+from __future__ import division, print_function
 
 import numpy as np
+from scipy import signal
 import matplotlib.pyplot as plt
-from scipy import signal as ss
 
 
+# =============================================================================
+# Synthetic Data Generation
+# =============================================================================
 
 def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 800, 
            phase1 = 0, phase2 = 0, phase3 = 0, phase4 = 0, phase5 = 0):
@@ -27,64 +31,85 @@ def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 8
     x_sum = x1 + x2 + x3 + x4
     return x_sum
 
-
-def H_ideal(fs = 18000, cutoff = 5000):
-    ones = np.ones(cutoff)
-    zeros = np.zeros(fs-cutoff-cutoff)
-    data = np.concatenate((ones, zeros, ones))
-    return data#[0:int(len(data)/2)]
+# =============================================================================
+# Function
+# =============================================================================
 
 
-def H_sampled(H_ideal, N):    
-    T = int(len(H_ideal)/(N))
-    sample = np.zeros(N)
-    sample[0] = H_ideal[0]
-    for i in range(1, N):
-        sample[i] = H_ideal[i*T]
-    return sample
+
+def plot_frq_response_dB(trans_width, numtaps , fs=8000, cutoff=1000):
+    taps = signal.remez(numtaps, [0, cutoff, cutoff + trans_width, 0.5*fs],
+                    [1, 0], Hz=fs)
+    w, h = signal.freqz(taps, [1], worN=2000)
+    plt.plot(0.5*fs*w/np.pi, 20*np.log10(np.abs(h)), \
+             label='trans_width={}, N={}'.format(trans_width,numtaps))
+    plt.ylim(-40, 5)
+    plt.xlim(0, 0.5*fs)
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Gain [dB]')
+    plt.grid(True)
 
 
-def h(H_sampled):
-    N = len(H_sampled)
-    if N % 2 == 0:
-        upper = int(N/2-1)
-    else:
-        upper = int((N-1)/2)
-        
-    alpha = (N-1)/2
-    h = np.zeros(N)
-    for n in range(N):
-        for i in range(upper):
-            h[n] += 2*abs(H_sampled[i])*np.cos(2*np.pi*i*(n-alpha)/N)+H_sampled[0]
-    return (1/N)*h
+def plot_frq_response(trans_width, numtaps , fs=8000, cutoff=1000):
+    taps = signal.remez(numtaps, [0, cutoff, cutoff + trans_width, 0.5*fs],
+                    [1, 0], Hz=fs)
+    w, h = signal.freqz(taps, [1], worN=2000)
+    plt.plot(0.5*fs*w/np.pi, np.abs(h), \
+             label='trans_width={}, N={}'.format(trans_width,numtaps))
+    plt.ylim(-0.1, 1.3)
+    plt.xlim(0, 0.5*fs)
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Gain')
+    plt.grid(True)
 
 
-def zeropad_fft(h, zeros=2**10):
-    h_pad = np.zeros(zeros)
-    h_pad[0:len(h)] = h
-    H_pad = np.abs(np.fft.fft(h_pad))
-    return H_pad[0:int(len(H_pad)/2)]
+def plot_imp_response(trans_width, numtaps , fs=8000, cutoff=1000):
+    taps = signal.remez(numtaps, [0, cutoff, cutoff + trans_width, 0.5*fs],
+                    [1, 0], Hz=fs)
+    plt.plot(taps, label='trans_width={}, N={}'.format(trans_width,numtaps))
+    plt.ylim(-0.1, 1)
+    #plt.xlim(0, 0.5*fs)
+    plt.xlabel('Sample number')
+    plt.ylabel('Amplitude')
+    plt.grid(True)
+
+# Low-pass filter design parameters
+fs = 8000.0       # Sample rate, Hz
+cutoff = 1000.0    # Desired cutoff frequency, Hz
+trans_width = 100  # Width of transition from pass band to stop band, Hz
+numtaps = 50      # Size of the FIR filter.
+
+plt.figure(figsize=(16,9))
+plt.title('Frequency response', fontsize = 20)
+plot_imp_response(trans_width=1, numtaps=50)
+plot_imp_response(trans_width=100, numtaps=50)
+plot_imp_response(trans_width=150, numtaps=50)
+plot_imp_response(trans_width=200, numtaps=50)
+plt.legend()
 
 
-def plt_dB(H_pad):
-    plt.figure()
-    plt.plot(H_pad)
-    plt.show()
-    plt.plot(np.linspace(0,9000, len(H_pad)),20*np.log10(H_pad))
-    plt.ylim(-100, 100)
-    plt.show()
-    
+plt.figure(figsize=(16,9))
+plt.title('Frequency response', fontsize = 20)
+plot_frq_response(trans_width=100, numtaps=50)
+plot_frq_response(trans_width=100, numtaps=50)
+plot_frq_response(trans_width=100, numtaps=50)
+plot_frq_response(trans_width=100, numtaps=50)
+plt.legend()
 
-H_ideal = H_ideal()
-H_sampled = H_sampled(H_ideal, 9)
-h_n = h(H_sampled)
 
-plt.plot(H_ideal, '*')
-plt.show()
-plt.plot(H_sampled, '*')
-plt.show()
-plt.plot(h_n, '*')
-plt.show()
-plt_dB(zeropad_fft(h_n))
+plt.figure(figsize=(16,9))
+plt.title('Frequency response', fontsize = 20)
+plot_frq_response_dB(trans_width=300, numtaps=100)
+plot_frq_response_dB(trans_width=100, numtaps=50)
+plot_frq_response_dB(trans_width=200, numtaps=50)
+plot_frq_response_dB(trans_width=300, numtaps=50)
+plt.plot([750], [-1], '*', label = '-1dB at 750Hz', color = 'black')
+plt.plot([1000], [-3], '*', label = '-3dB at 1000Hz', color = 'blue')
+plt.plot([1500], [-10], '*', label = '-10dB at 1500Hz', color = 'red')
+plt.legend()
+
+
+
+
 
 
