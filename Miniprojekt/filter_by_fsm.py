@@ -67,7 +67,7 @@ def H_sampled(H_ideal, N):
     H_sampled = np.zeros(N)
     x = np.zeros(N)
     H_sampled[0] = H_ideal[0]
-    for i in range(1, N):
+    for i in range(N):
         H_sampled[i] = H_ideal[i*T]
         x[i] = i*T
     return H_sampled, x
@@ -127,7 +127,7 @@ def plt_magnitude_dB(H_pad):
 # Using functions
 # =============================================================================
 
-hej = rework(np.array([1,1,1,0,0,0]), T =1)
+
 
 
 points = 15
@@ -137,7 +137,7 @@ H_omega0 = H_ideal()
 H_omega1 = H(a = 500)
 H_omega2 = H(a = 1000)
 H_omega3 = H(a = 1500)
-H_k0, x = H_sampled(H_omega0, points)
+H_k0, x1 = H_sampled(H_omega0, 64)
 H_k1, x = H_sampled(H_omega1, points)
 H_k2, x = H_sampled(H_omega2, points)
 H_k3, x = H_sampled(H_omega3, points)
@@ -216,6 +216,15 @@ max13 = np.amax(H2_pad13)
 max15 = np.amax(H2_pad15)
 max17 = np.amax(H2_pad17)
 
+plt.figure(figsize=(10,5))
+plt.title('Ideal Frequncy Response', fontsize=20)
+plt.plot(H_omega0, label = 'Ideal lowpass')
+plt.plot(x1, H_k0, '*', color = 'black', label = 'Sampled lowpass')
+plt.ylabel('Gain')
+plt.xlabel('Frequency [Hz]')
+plt.legend()
+plt.grid()
+plt.savefig('figure/ideal_sam.pdf')
 
 # =============================================================================
 # Plotting
