@@ -39,7 +39,7 @@ def H_ideal(fs = 8000, cutoff = 1000):
     return H_ideal
 
 
-def H1(fs = 8000, cutoff = 1000, a = 1000):
+def H(fs = 8000, cutoff = 1000, a = 1000):
     def f(x):
         return -1*x + 1
     def g(x):
@@ -52,12 +52,14 @@ def H1(fs = 8000, cutoff = 1000, a = 1000):
     H = np.concatenate((ones, y, zeros, y2, ones))  
     return H
 
-def H(fs = 8000, cutoff = 1000, a = 1000):
-    ones = np.ones(cutoff)
-    zeros = np.zeros(fs-2*cutoff-2*len(x))
-    H = np.concatenate((ones, y, zeros, y2, ones))  
-    return H
+#def H(fs = 8000, cutoff = 1000, a = 1000):
+#    ones = np.ones(cutoff)
+#    zeros = np.zeros(fs-2*cutoff-2*len(x))
+#    H = np.concatenate((ones, y, zeros, y2, ones))  
+#    return H
 
+
+    
 
 
 def H_sampled(H_ideal, N):
@@ -79,6 +81,12 @@ def H_sampled2(H_ideal, N):
         x[i] = int(i*T)+int((T*(1/2)))
     return H_sampled, x
 
+
+def rework(H_sample, T, N):
+    if N == 16:
+        if T == 1:
+            H_sample[np.where(H_sample == 0)[0][0]] = 0.40397949
+    return H_sample
 
 
 def h(H_sampled):
@@ -118,7 +126,10 @@ def plt_magnitude_dB(H_pad):
 # =============================================================================
 # Using functions
 # =============================================================================
-    
+
+hej = rework(np.array([1,1,1,0,0,0]), T =1)
+
+
 points = 15
 
 #type 1
@@ -215,8 +226,8 @@ max17 = np.amax(H2_pad17)
 #plt.savefig('figure/ideal_sam_t2.pdf')
 
 # Impulse response
-plt.figure(figsize = (16,9))
-plt.title('Impulse Response Coefficients (Type 2)', fontsize = 20)
+#plt.figure(figsize = (16,9))
+#plt.title('Impulse Response Coefficients (Type 2)', fontsize = 20)
 #plt.subplot(121)
 #plt.title('Type 1', fontsize = 15)
 #plt.plot(h0)
@@ -235,79 +246,79 @@ plt.title('Impulse Response Coefficients (Type 2)', fontsize = 20)
 ##plt.subplots_adjust(hspace= 0.3)
 #plt.subplot(122)
 #plt.title('Type 2', fontsize = 15)
-plt.plot(h0_2)
-plt.plot(h1_2)
-plt.plot(h2_2)
-plt.plot(h3_2)
-plt.plot(h0_2, '*', label = '0 Hz transition band', color='C0')
-plt.plot(h1_2, '*', label = '500 Hz transition band', color='C1')
-plt.plot(h2_2, '*', label = '1000 Hz transition band', color='C2')
-plt.plot(h3_2, '*', label = '1500 Hz transition band', color='C3')
-plt.xlabel('Sample number')
-plt.ylabel('Amplitude')
-plt.ylim(-0.1, 0.5)
-plt.legend()
-plt.grid()
-plt.savefig('figure/impulse.pdf')
-
-# Magnitude
-plt.figure(figsize = (16,9))
-plt.suptitle('Magnitude', fontsize = 20)
-plt.subplot(211)
-plt.title('Type 1', fontsize = 15)
-plt.plot(np.linspace(0, 4000, len(H_pad0)), H_pad0, label = 'Magnitude')
-plt.plot(np.linspace(0, 4000, len(H_pad1)), H_pad1, label = 'Magnitude')
-plt.plot(np.linspace(0, 4000, len(H_pad2)), H_pad2, label = 'Magnitude')
-plt.plot(np.linspace(0, 4000, len(H_pad3)), H_pad3, label = 'Magnitude')
-plt.xlabel('Frequency [Hz]')
-plt.ylabel('Magnitude')
-plt.ylim(-0.1,1.1)
+#plt.plot(h0_2)
+#plt.plot(h1_2)
+#plt.plot(h2_2)
+#plt.plot(h3_2)
+#plt.plot(h0_2, '*', label = '0 Hz transition band', color='C0')
+#plt.plot(h1_2, '*', label = '500 Hz transition band', color='C1')
+#plt.plot(h2_2, '*', label = '1000 Hz transition band', color='C2')
+#plt.plot(h3_2, '*', label = '1500 Hz transition band', color='C3')
+#plt.xlabel('Sample number')
+#plt.ylabel('Amplitude')
+#plt.ylim(-0.1, 0.5)
+#plt.legend()
+#plt.grid()
+#plt.savefig('figure/impulse.pdf')
+#
+## Magnitude
+#plt.figure(figsize = (16,9))
+#plt.suptitle('Magnitude', fontsize = 20)
+#plt.subplot(211)
+#plt.title('Type 1', fontsize = 15)
+#plt.plot(np.linspace(0, 4000, len(H_pad0)), H_pad0, label = 'Magnitude')
+#plt.plot(np.linspace(0, 4000, len(H_pad1)), H_pad1, label = 'Magnitude')
+#plt.plot(np.linspace(0, 4000, len(H_pad2)), H_pad2, label = 'Magnitude')
+#plt.plot(np.linspace(0, 4000, len(H_pad3)), H_pad3, label = 'Magnitude')
+#plt.xlabel('Frequency [Hz]')
+#plt.ylabel('Magnitude')
+#plt.ylim(-0.1,1.1)
 #plt.plot(1000, 1/np.sqrt(2), '*')
-plt.legend()
-plt.grid()
-plt.subplots_adjust(hspace= 0.3)
-plt.subplot(212)
-plt.title('Type 2', fontsize = 15)
-plt.plot(np.linspace(0, 4000, len(H2_pad0)), H2_pad0, label = 'Magnitude')
-plt.plot(np.linspace(0, 4000, len(H2_pad1)), H2_pad1, label = 'Magnitude')
-plt.plot(np.linspace(0, 4000, len(H2_pad2)), H2_pad2, label = 'Magnitude')
-plt.plot(np.linspace(0, 4000, len(H2_pad3)), H2_pad3, label = 'Magnitude')
-plt.xlabel('Frequency [Hz]')
-plt.ylabel('Magnitude')
-plt.ylim(-0.1,1.1)
-#plt.plot(1000, 1/np.sqrt(2), '*')
-plt.legend()
-plt.grid()
+#plt.legend()
+#plt.grid()
+#plt.subplots_adjust(hspace= 0.3)
+#plt.subplot(212)
+#plt.title('Type 2', fontsize = 15)
+#plt.plot(np.linspace(0, 4000, len(H2_pad0)), H2_pad0, label = 'Magnitude')
+#plt.plot(np.linspace(0, 4000, len(H2_pad1)), H2_pad1, label = 'Magnitude')
+#plt.plot(np.linspace(0, 4000, len(H2_pad2)), H2_pad2, label = 'Magnitude')
+#plt.plot(np.linspace(0, 4000, len(H2_pad3)), H2_pad3, label = 'Magnitude')
+#plt.xlabel('Frequency [Hz]')
+#plt.ylabel('Magnitude')
+#plt.ylim(-0.1,1.1)
+##plt.plot(1000, 1/np.sqrt(2), '*')
+#plt.legend()
+#plt.grid()
 #plt.save('figure/magnitude.pdf')
 
 # Frequency response
-plt.figure(figsize = (16,9))
-plt.suptitle('Frequency response', fontsize = 20)
-plt.subplot(211)
-plt.title('Type 1', fontsize = 15)
-plt.plot(np.linspace(0, 4000, len(H_pad0)), 20*np.log10(H_pad0), label = 'Frequency response $|H(f)|$')
-plt.plot(np.linspace(0, 4000, len(H_pad1)), 20*np.log10(H_pad1), label = 'Frequency response $|H(f)|$')
-plt.plot(np.linspace(0, 4000, len(H_pad2)), 20*np.log10(H_pad2), label = 'Frequency response $|H(f)|$')
-plt.plot(np.linspace(0, 4000, len(H_pad3)), 20*np.log10(H_pad3), label = 'Frequency response $|H(f)|$')
-plt.xlabel('Frequency [Hz]')
-plt.ylabel('$|H(f)|$ [dB]')
-plt.ylim(-100, 10)
-plt.plot([750, 1000, 1500], [-1, -3, -10], '*', label = 'Goals')
-plt.legend()
-plt.grid()
-plt.subplots_adjust(hspace= 0.3)
-plt.subplot(212)
-plt.title('Type 2', fontsize = 15)
-plt.plot(np.linspace(0, 4000, len(H2_pad0)), 20*np.log10(H2_pad0), label = 'Frequency response $|H(f)|$')
-plt.plot(np.linspace(0, 4000, len(H2_pad1)), 20*np.log10(H2_pad1), label = 'Frequency response $|H(f)|$')
-plt.plot(np.linspace(0, 4000, len(H2_pad2)), 20*np.log10(H2_pad2), label = 'Frequency response $|H(f)|$')
-plt.plot(np.linspace(0, 4000, len(H2_pad3)), 20*np.log10(H2_pad3), label = 'Frequency response $|H(f)|$')
-plt.xlabel('Frequency [Hz]')
-plt.ylabel('$|H(f)|$ [dB]')
-plt.ylim(-100, 10)
-plt.plot([750, 1000, 1500], [-1, -3, -10], '*', label = 'Goals')
-plt.legend()
-plt.grid()
+#plt.figure(figsize = (16,9))
+#plt.suptitle('Frequency response', fontsize = 20)
+#plt.subplot(211)
+#plt.title('Type 1', fontsize = 15)
+#plt.plot(np.linspace(0, 4000, len(H_pad0)), 20*np.log10(H_pad0), label = 'Frequency response $|H(f)|$')
+#plt.plot(np.linspace(0, 4000, len(H_pad1)), 20*np.log10(H_pad1), label = 'Frequency response $|H(f)|$')
+#plt.plot(np.linspace(0, 4000, len(H_pad2)), 20*np.log10(H_pad2), label = 'Frequency response $|H(f)|$')
+#plt.plot(np.linspace(0, 4000, len(H_pad3)), 20*np.log10(H_pad3), label = 'Frequency response $|H(f)|$')
+#plt.xlabel('Frequency [Hz]')
+#plt.ylabel('$|H(f)|$ [dB]')
+#plt.ylim(-100, 10)
+#plt.plot([750, 1000, 1500], [-1, -3, -10], '*', label = 'Goals')
+#plt.legend()
+#plt.grid()
+#plt.subplots_adjust(hspace= 0.3)
+#plt.subplot(212)
+#plt.title('Type 2', fontsize = 15)
+#plt.plot(np.linspace(0, 4000, len(H2_pad0)), 20*np.log10(H2_pad0), label = 'Frequency response $|H(f)|$')
+#plt.plot(np.linspace(0, 4000, len(H2_pad1)), 20*np.log10(H2_pad1), label = 'Frequency response $|H(f)|$')
+#plt.plot(np.linspace(0, 4000, len(H2_pad2)), 20*np.log10(H2_pad2), label = 'Frequency response $|H(f)|$')
+#plt.plot(np.linspace(0, 4000, len(H2_pad3)), 20*np.log10(H2_pad3), label = 'Frequency response $|H(f)|$')
+#plt.xlabel('Frequency [Hz]')
+#plt.ylabel('$|H(f)|$ [dB]')
+#plt.ylim(-100, 10)
+#plt.plot([750, 1000, 1500], [-1, -3, -10], '*', label = 'Goals')
+#plt.legend()
+#plt.grid()
 #plt.savefig('figure/freq_response.pdf')
 
 
