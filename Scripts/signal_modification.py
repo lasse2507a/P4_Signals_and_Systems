@@ -8,8 +8,8 @@ Created on Sat Mar 21 23:22:09 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal as ss
-import librosa
-import librosa.display
+#import librosa
+#import librosa.display
 
 
 # =============================================================================
@@ -17,10 +17,10 @@ import librosa.display
 # =============================================================================
 
 filename = 'sound/vokaler.wav'
-y, sr = librosa.load(filename)
-# trim silent edges
-whale_song, _ = librosa.effects.trim(y)
-#librosa.display.waveplot(whale_song, sr=sr)
+#y, sr = librosa.load(filename)
+## trim silent edges
+#whale_song, _ = librosa.effects.trim(y)
+##librosa.display.waveplot(whale_song, sr=sr)
 
 # =============================================================================
 # Synthetic Data Generation
@@ -60,6 +60,8 @@ def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 8
 def window(window_name, M):
     if window_name == 'boxcar':
         return ss.windows.boxcar(M)
+    elif window_name == 'bartlett':
+        return ss.windows.bartlett(M)
     elif window_name == 'hamming':
         return ss.windows.hamming(M)
     elif window_name == 'hann':
@@ -125,10 +127,51 @@ def zeropad_fft(h, zeros=2**15):
     H_pad = H_pad[0:int(len(H_pad)/2)]
     return H_pad
 
-H_pad = (zeropad_fft(window('hamming', 50)))
+H1 = (zeropad_fft(window('boxcar', 50)))
+H2 = (zeropad_fft(window('bartlett', 50)))
+H3 = (zeropad_fft(window('hann', 50)))
+H4 = (zeropad_fft(window('hamming', 50)))
+H5 = (zeropad_fft(window('blackman', 50)))
 
-plt.plot( plt.plot(np.linspace(0, 4000, len(H_pad)), 20*np.log10(np.abs(H_pad)), \
-             label = 'FSM, N = {}'.format(N)))
+plt.figure(figsize=(9,16))
+plt.subplots_adjust(hspace = 0.5)
+plt.subplot(511)
+plt.plot(np.linspace(0, np.pi, len(H1)), 20*np.log10(np.abs(H1/ abs(H1).max())))
+plt.ylabel('Magnitude [dB]')
+plt.xlabel('Radian Frequency [$\omega$]')
+plt.legend(['Rectangular'])
+plt.ylim(-100, 0)
+plt.xlim(0, np.pi)
+plt.subplot(512)
+plt.plot(np.linspace(0, np.pi, len(H2)), 20*np.log10(np.abs(H2/ abs(H2).max())), 'g')
+plt.ylabel('Magnitude [dB]')
+plt.xlabel('Radian Frequency [$\omega$]')
+plt.legend(['Triangular'])
+plt.ylim(-100, 0)
+plt.xlim(0, np.pi)
+plt.subplot(513)
+plt.plot(np.linspace(0, np.pi, len(H3)), 20*np.log10(np.abs(H3/ abs(H3).max())), 'r')
+plt.ylabel('Magnitude [dB]')
+plt.xlabel('Radian Frequency [$\omega$]')
+plt.legend(['Hann'])
+plt.ylim(-100, 0)
+plt.xlim(0, np.pi)
+plt.subplot(514)
+plt.plot(np.linspace(0, np.pi, len(H4)), 20*np.log10(np.abs(H4/ abs(H4).max())), 'm')
+plt.ylabel('Magnitude [dB]')
+plt.xlabel('Radian Frequency [$\omega$]')
+plt.legend(['Hamming'])
+plt.ylim(-100, 0)
+plt.xlim(0, np.pi)
+plt.subplot(515)
+plt.plot(np.linspace(0, np.pi, len(H5)), 20*np.log10(np.abs(H5/ abs(H5).max())), 'k')
+plt.ylabel('Magnitude [dB]')
+plt.xlabel('Radian Frequency [$\omega$]')
+plt.legend(['Blackman'])
+plt.ylim(-100, 0)
+plt.xlim(0, np.pi)
+plt.show()
+
 
 #plt.plot(bandfilter)
 #plt.show()
