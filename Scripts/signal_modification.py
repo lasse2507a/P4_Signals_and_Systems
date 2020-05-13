@@ -134,7 +134,7 @@ H4 = (zeropad_fft(window('hamming', 50)))
 H5 = (zeropad_fft(window('blackman', 50)))
 
 plt.figure(figsize=(8,13))
-plt.subplots_adjust(hspace = 0.25)
+plt.subplots_adjust(hspace = 0.3)
 plt.subplot(511)
 plt.plot(np.linspace(0, np.pi, len(H1)), 20*np.log10(np.abs(H1/ abs(H1).max())))
 plt.ylabel('Magnitude [dB]')
