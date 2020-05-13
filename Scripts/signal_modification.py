@@ -118,34 +118,45 @@ w, h = ss.freqz(bandfilter)
 # Plotting
 # =============================================================================
 
+def zeropad_fft(h, zeros=2**15):
+    h_pad = np.zeros(zeros)
+    h_pad[0:len(h)] = h
+    H_pad = np.abs(np.fft.fft(h_pad))
+    H_pad = H_pad[0:int(len(H_pad)/2)]
+    return H_pad
 
-plt.plot(bandfilter)
-plt.show()
+H_pad = (zeropad_fft(window('hamming', 50)))
 
-fig = plt.figure()
-plt.title('Digital filter frequency response')
-plt.plot(w, 20 * np.log10(abs(h)), 'b')
-plt.ylabel('Amplitude [dB]', color='b')
-plt.xlabel('Frequency [rad/sample]')
-ax1 = fig.add_subplot(111)
-ax2 = ax1.twinx()
-angles = np.unwrap(np.angle(h))
-plt.plot(w, angles, 'g')
-plt.ylabel('Angle (radians)', color='g')
-plt.grid()
-plt.axis('tight')
-plt.show()
+plt.plot( plt.plot(np.linspace(0, 4000, len(H_pad)), 20*np.log10(np.abs(H_pad)), \
+             label = 'FSM, N = {}'.format(N)))
 
-
-fs = 2**13 #4*np.pi 
-
-frq1 = 1500 #2*np.pi/(2**13)*100
-frq2 = 300 #2*np.pi/(2**13)*300
-frq3 = 800 #2*np.pi/(2**13)*500
-frq4 = 1000 #2*np.pi/(2**13)*800
-
-spectrogram_lib(fsinew(fs = fs, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), fs, n_fft=int(2048/2), hop_length=512, window='hann')
-
-x_filtered = filtering(fsinew(fs=fs, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), bandfilter)
-
-spectrogram_lib(x_filtered, fs, n_fft=int(2048/2), hop_length=512, window='hann')
+#plt.plot(bandfilter)
+#plt.show()
+#
+#fig = plt.figure()
+#plt.title('Digital filter frequency response')
+#plt.plot(w, 20 * np.log10(abs(h)), 'b')
+#plt.ylabel('Amplitude [dB]', color='b')
+#plt.xlabel('Frequency [rad/sample]')
+#ax1 = fig.add_subplot(111)
+#ax2 = ax1.twinx()
+#angles = np.unwrap(np.angle(h))
+#plt.plot(w, angles, 'g')
+#plt.ylabel('Angle (radians)', color='g')
+#plt.grid()
+#plt.axis('tight')
+#plt.show()
+#
+#
+#fs = 2**13 #4*np.pi 
+#
+#frq1 = 1500 #2*np.pi/(2**13)*100
+#frq2 = 300 #2*np.pi/(2**13)*300
+#frq3 = 800 #2*np.pi/(2**13)*500
+#frq4 = 1000 #2*np.pi/(2**13)*800
+#
+#spectrogram_lib(fsinew(fs = fs, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), fs, n_fft=int(2048/2), hop_length=512, window='hann')
+#
+#x_filtered = filtering(fsinew(fs=fs, freq1 = frq1, freq2 = frq2, freq3 = frq3, freq4 = frq4), bandfilter)
+#
+#spectrogram_lib(x_filtered, fs, n_fft=int(2048/2), hop_length=512, window='hann')
