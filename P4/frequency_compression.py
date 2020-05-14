@@ -49,11 +49,10 @@ def linear_freq_comp(signal, tau):
 
 def nonlinear_freq_comp(signal, fc, tau):
     signal = np.abs(np.fft.fft(signal))[0:int(len(signal)/2)]
-    region = signal[fc:]
-    region_comp = np.zeros(len(region))
-    for i in range(len(region)):
-        region_comp[int(((i+fc)**(1/tau))*(fc**(1-1/tau)))] += region[i]
-    signal_comp = np.fft.ifft(np.append(signal[0:fc], region_comp))
+    signal_comp = np.zeros(len(signal))
+    for i in range(len(signal)-fc-1):
+        signal_comp[int(((i+fc+1)**(1/tau))*(fc**(1-1/tau)))] += signal[i+fc+1]
+    signal_comp = np.fft.ifft(np.append(signal[0:fc], signal_comp[fc:]))
     return signal_comp
 
 
