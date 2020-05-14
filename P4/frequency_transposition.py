@@ -28,7 +28,7 @@ filename = 'sound/jacob_snak.wav'
 y, sr = librosa.load(filename)
 
 
-def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 800, 
+def fsinew(J = 13, fs = 2**13 , freq1 = 3000, freq2 = 1000, freq3 = 3500, freq4 = 500, 
            phase1 = 0, phase2 = 0, phase3 = 0, phase4 = 0, phase5 = 0):
     """
     Signal consisting of four sine waves with specified 
@@ -37,7 +37,7 @@ def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 8
     N = 2**J
     t = np.arange(N)/fs
     A = 2 * np.pi * t
-    x1 = np.sin(A * freq1 + phase1)
+    x1 = 0.5*np.sin(A * freq1 + phase1)
     x2 = np.sin(A * freq2 + phase2)
     x3 = np.sin(A * freq3 + phase3)
     x4 = np.sin(A * freq4 + phase4)
@@ -46,14 +46,47 @@ def fsinew(J = 18, fs = 2**12 , freq1 = 200, freq2 = 400, freq3 = 500, freq4 = 8
 
 
 
-def transposition(data, start_frq):
-    data_fft = np.fft.fft(data)
+def transposition(data, start_frq, slut_frq, fs):
+    
+    data_fft = abs(np.fft.fft(data))[0:int(len(data)/2)]
+    
+    data_del = data_fft[start_frq:slut_frq]
+    
+    max_punkt = np.where(data_del == np.amax(data_del))[0][0] + start_frq
+    
+    source_up = max_punkt + int(max_punkt/2)
+    
+    source_down = int(max_punkt/2) + int(max_punkt/4)
+    
+    octav_source = source_up - source_down
+    
+    target_up = start_frq
+    
+    target_down = int(start_frq/2)
+    
+    data_source = data_fft[source_down : source_up]
+    
+    data_target = data_fft[target_down: target_up]
+    
+    k=0
+    for i in range(len(data_source)):
+        if source_down + i - octav_source < target_up and \
+        source_down + i - octav_source > target_down:
+            data_fft[k + target_down] = data_target[k] + data_source[i]
+            k += 1
+
     return data_fft
 
 
-hej = transposition(fsinew(), 600)
+start_frq = 2000
+slut_frq = 4000
+hej = transposition(fsinew(), start_frq, slut_frq, 2**12)
+data = abs(np.fft.fft(fsinew()))[0:int(len(fsinew())/2)]
 
-plt.plot(hej)
+
+plt.plot(np.linspace(0,2**13, len(hej)), abs(hej))
+plt.show()
+plt.plot(np.linspace(0,2**13, len(data)), abs(data))
 
 
 #def fir_bandfilter(window, M, fc_low, fc_high, fs):
