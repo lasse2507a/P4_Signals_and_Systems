@@ -8,8 +8,8 @@ Created on Sat Mar 21 23:22:09 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal as ss
-#import librosa
-#import librosa.display
+import librosa
+import librosa.display
 
 
 # =============================================================================
@@ -17,10 +17,10 @@ from scipy import signal as ss
 # =============================================================================
 
 filename = 'sound/vokaler.wav'
-#y, sr = librosa.load(filename)
-## trim silent edges
+y, sr = librosa.load(filename)
+# trim silent edges
 #whale_song, _ = librosa.effects.trim(y)
-##librosa.display.waveplot(whale_song, sr=sr)
+#librosa.display.waveplot(whale_song, sr=sr)
 
 # =============================================================================
 # Synthetic Data Generation
