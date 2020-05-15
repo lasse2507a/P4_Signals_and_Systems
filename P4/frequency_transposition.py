@@ -117,6 +117,8 @@ data = abs(np.fft.fft(data2))[0:int(len(data2)/2)]
 plt.plot(np.linspace(0,sr/4, len(hej)), abs(hej))
 plt.plot(np.linspace(0,sr/4, len(data)), abs(data))
 plt.plot(np.linspace(2000,3000, 1000), abs(data[2000:3000]))
+for i in [1000,2000,4000]: #X-værdier for lodrette streger
+    plt.axvline(x=i, color='black', linestyle='dotted')
 
 #hej2 = np.fft.ifft(hej)
 #
