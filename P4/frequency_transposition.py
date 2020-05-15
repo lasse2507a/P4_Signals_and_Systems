@@ -96,24 +96,31 @@ def transposition(data, start_frq, fs):
     max_punkt = np.where(data_source == np.amax(data_source))[0][0] + start_frq
     octav_down = int(max_punkt/2)
     k=0
+    test = np.zeros(len(data_target)-1)
     for i in range(len(data_source)):
         if start_frq + i - octav_down < start_frq and \
         start_frq + i - octav_down > target_down:
             data_fft[k + target_down] = data_target[k] + data_source[i]
+            test[k] = i
             k += 1
-    return data_fft
+    return data_fft, test, data_source
 
 
+
+plt.figure(figsize = (10, 5))
 start_frq = 2000
 slut_frq = 4000
-hej = transposition2(data2, start_frq, slut_frq, sr/2)
+hej, test, source = transposition(data2, start_frq, sr/2)
 data = abs(np.fft.fft(data2))[0:int(len(data2)/2)]
 
 
 plt.plot(np.linspace(0,sr/4, len(hej)), abs(hej))
 plt.plot(np.linspace(0,sr/4, len(data)), abs(data))
+plt.plot(np.linspace(2000,3000, 1000), abs(data[2000:3000]))
 
-
+#hej2 = np.fft.ifft(hej)
+#
+#librosa.output.write_wav('sound/transposition_test.wav', hej2, sr/2)
 
 #def fir_bandfilter(window, M, fc_low, fc_high, fs):
 #    cutoff = [fc_low, fc_high]
