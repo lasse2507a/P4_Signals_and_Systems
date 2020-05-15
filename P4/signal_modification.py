@@ -92,6 +92,24 @@ def filtering(x, fir_filter):
     return y
 
 
+def transposition(data, start_frq, fs):
+    data_fft = abs(np.fft.fft(data))[0:int(len(data)/2)]
+    start_frq = int(start_frq * (len(data)/fs))
+    source_up = start_frq*2
+    target_down = int(start_frq/2)
+    data_source = data_fft[start_frq : source_up]
+    data_target = data_fft[target_down: start_frq]
+    max_punkt = np.where(data_source == np.amax(data_source))[0][0] + start_frq
+    octav_down = int(max_punkt/2)
+    k=0
+    for i in range(len(data_source)):
+        if start_frq + i - octav_down < start_frq and \
+        start_frq + i - octav_down > target_down:
+            data_fft[k + target_down] = data_target[k] + data_source[i]
+            k += 1
+    return data_fft
+
+
 def linear_freq_comp(signal, tau):
     signal = np.abs(np.fft.fft(signal))[0:int(len(signal)/2)]
     region_comp = np.zeros(len(signal))
