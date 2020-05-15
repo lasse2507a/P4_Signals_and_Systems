@@ -101,7 +101,6 @@ def transposition(data, start_frq, fs):
         start_frq + i - octav_down > target_down:
             data_fft[k + target_down] = data_target[k] + data_source[i]
             k += 1
-
     return data_fft
 
 
