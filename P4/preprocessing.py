@@ -57,7 +57,7 @@ def filtering(x, fir_filter):
     return y
 
 
-def zeropad_fft(h, zeros=2**15):
+def zeropad_fft(h, zeros=44100):
     h_pad = np.zeros(zeros)
     h_pad[0:len(h)] = h
     H_pad = np.abs(np.fft.fft(h_pad))
@@ -65,7 +65,30 @@ def zeropad_fft(h, zeros=2**15):
     return H_pad
 
 
+def h_d(N = 87, fc = 4000/44100):
+    h_d = np.zeros(N+1)
+    for k in range(N+1):
+        h_d[k] = (np.sin(fc*(k-N/2)))/(np.pi*(k-N/2))
+    return h_d
+
+
 # =============================================================================
 # Plotting
 # =============================================================================
+h_hann = h_d()*window('hann', 88)
+h_hamming = h_d()*window('hamming', 88)
+h_blackman = h_d(131)*window('blackman', 132)
 
+H_hann = zeropad_fft(h_hann)
+H_hamming = zeropad_fft(h_hamming)
+H_blackman = zeropad_fft(h_blackman)
+
+plt.figure(figsize=(14,10))
+plt.subplot(211)
+plt.plot(h_hann, ':', color = 'r')
+plt.plot(h_hamming, ':', color = 'm')
+plt.plot(h_blackman, ':', color = 'k')
+plt.subplot(212)
+plt.plot(H_hann, color = 'r')
+plt.plot(H_hamming, color = 'm')
+plt.plot(H_blackman,  color = 'k')
