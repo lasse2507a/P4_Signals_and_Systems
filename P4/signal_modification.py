@@ -137,11 +137,12 @@ def nonlinear_freq_comp(signal, fc, tau):
 def transposition_short(data, start_frq, fs, f):
     #D = np.abs(librosa.stft(data, n_fft=n_fft,  hop_length=512, window=window))
     data_fft = data# abs(np.fft.fft(data))[0:int(len(data)/2)]
+    test = np.zeros_like(data_fft)
     start_frq = int(start_frq/(fs/2/len(f)))
     source_up = start_frq*2
     target_down = int(start_frq/2)
     #data27 = np.zeros_like(data_fft)
-    for n in range(len(data_fft[:,0])):
+    for n in range(len(data_fft[0,:])):
         data_source = data_fft[start_frq : source_up, n]
         data_target = data_fft[target_down: start_frq, n]
         max_punkt = np.where(data_source == np.amax(data_source))[0][0] + start_frq
@@ -152,7 +153,8 @@ def transposition_short(data, start_frq, fs, f):
             start_frq + i - octav_down > target_down:
                 data_fft[k + target_down, n] = data_target[k] + data_source[i]
                 k += 1
-    return data_fft
+        data_fft[40:89, n] = 0
+    return data_fft, test
 
 data = y
 fs = sr
@@ -163,8 +165,9 @@ window_length = 20e-3 #s
 number_samp = int(fs/down_with*(window_length))
 #D = np.abs(librosa.core.stft(data, n_fft=number_samp,  hop_length=512, window='hamming'))
 
-f, t, F = ss.stft(data_down, sr, 'hamming', nperseg = number_samp, noverlap = None)
+f, t, F = ss.stft(data_down, sr/5, 'hamming', nperseg = number_samp, noverlap = None)
 
+f7, t7, F1 = ss.stft(data_down, sr/5, 'hamming', nperseg = number_samp, noverlap = None)   
 
 h = np.zeros(len(F[:,0]), dtype = complex)
 for i in range(len(F[:,0])):
@@ -177,10 +180,15 @@ plt.plot(f,np.abs(h))
 plt.show()
 plt.plot(f,np.abs(F[:,160]), color = 'C0')
 
-trans = transposition_short(F, 2000, fs, f)
+trans, test = transposition_short(F, 2000, fs, f)
+
+for i in range(len(F1[0,:])):
+    F1[40:89,i] = 0
 
 t1, Fi = ss.istft(trans, sr,'hamming')
+t2, test2 = ss.istft(F1, sr,'hamming')
 
 librosa.output.write_wav('sound/ny_lyd.wav', Fi, int(sr/5))
+librosa.output.write_wav('sound/ny_lyd2.wav', test2, int(sr/5))
 
-dif = trans-F
+dif = test2-Fi
