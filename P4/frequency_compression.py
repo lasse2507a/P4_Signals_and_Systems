@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
+import librosa
+import librosa.display
+import scipy.fftpack as fftpack
 
+filename = 'sound/jacob_snak.wav'
+y, sr = librosa.core.load(filename, sr = None)
 
 # =============================================================================
 # Synthetic Data Generation
@@ -56,70 +61,123 @@ def nonlinear_freq_comp(signal, fc, tau):
     return signal_comp
 
 
+def linear_freq_comp1(signal, tau):
+    signal = np.abs(np.fft.fft(signal))[0:int(len(signal)/2)]
+    region_comp = np.zeros(len(signal))
+    for i in range(len(signal)):
+        region_comp[int(i*tau)] = signal[i]
+    signal_comp = fftpack.irfft(region_comp)
+    return signal_comp
+
+
+def nonlinear_freq_comp1(signal, fc, tau):
+    signal = np.abs(np.fft.fft(signal))[0:int(len(signal)/2)]
+    signal_comp = np.zeros(len(signal))
+    for i in range(len(signal)-fc-1):
+        signal_comp[int(((i+fc+1)**(1/tau))*(fc**(1-1/tau)))] += signal[i+fc+1]
+    signal_comp = np.fft.ifft(np.append(signal[0:fc], signal_comp[fc:]))
+    return signal_comp
+
+
 # =============================================================================
 # Application of Functions
 # =============================================================================
-signal = fsinew()
-signal_comp = linear_freq_comp(signal, 0.5)
+signal = y
+signal_comp = linear_freq_comp1(signal, 0.5)
 signal_comp2 = nonlinear_freq_comp(signal, 1000, 2)
+fs = sr
 
-plt.figure(figsize=(16,8))
-plt.subplots_adjust(hspace = 0.45)
-plt.subplot(411)
-plt.plot(signal)
-plt.ylabel('Amplitude')
-plt.xlabel('Time [s]')
-plt.subplot(412)
-plt.plot(np.abs(np.fft.fft(signal))[0:int(len(signal)/2)])
+plt.figure(figsize=(10,5))
+plt.plot(np.abs(fftpack.rfft(signal)), color = 'C0')
+#plt.plot(np.linspace(0,fs/2,int(len(signal)/2)),np.abs(np.fft.fft(signal_comp))[0:int(len(signal)/2)])
 plt.ylabel('Magnitude')
 plt.xlabel('Frequency [Hz]')
-plt.subplot(413)
-plt.plot(signal_comp)
-plt.ylabel('Amplitude')
-plt.xlabel('Time [s]')
-plt.subplot(414)
-plt.plot(np.abs(np.fft.fft(signal_comp))[0:int(len(signal)/2)])
-plt.ylabel('Magnitude')
-plt.xlabel('Frequency [Hz]')
-
-plt.figure(figsize=(16,8))
-plt.subplots_adjust(hspace = 0.45)
-plt.subplot(411)
-plt.plot(signal)
-plt.ylabel('Amplitude')
-plt.xlabel('Time [s]')
-plt.subplot(412)
-plt.plot(np.abs(np.fft.fft(signal))[0:int(len(signal)/2)])
-plt.ylabel('Magnitude')
-plt.xlabel('Frequency [Hz]')
-plt.subplot(413)
-plt.plot(signal_comp2)
-plt.ylabel('Amplitude')
-plt.xlabel('Time [s]')
-plt.subplot(414)
-plt.plot(np.abs(np.fft.fft(signal_comp2))[0:int(len(signal)/2)])
-plt.ylabel('Magnitude')
-plt.xlabel('Frequency [Hz]')
-
-plt.figure(figsize=(10,4))
-plt.plot(np.linspace(0,8000), np.linspace(0,int(8000*0.7)), 'b', label = '$\\tau = 0.7$')
-plt.plot(np.linspace(0,8000), np.linspace(0,int(8000*0.6)), 'g', label = '$\\tau = 0.6$')
-plt.plot(np.linspace(0,8000), np.linspace(0,int(8000*0.5)), 'r', label = '$\\tau = 0.5$')
-plt.legend()
-plt.ylabel('$f_{out}$ [Hz]')
-plt.xlabel('$f_{in}$ [Hz]')
+#plt.xlim(0,6000)
 plt.grid()
-plt.savefig('figures/linear_frequency_compression.pdf')
+#plt.savefig('figures/comb_original.pdf')
 
-plt.figure(figsize=(10,4))
-plt.axhline(y=1000, xmax=0.16, color = 'k', linestyle = '--')
-plt.axvline(x=1000, ymax=0.27, color = 'k', linestyle = '--')
-plt.plot(np.linspace(0,1000), np.linspace(0,1000), 'k')
-plt.plot(np.linspace(1000,8000), (np.linspace(1000,8000)**(1/1.5))*(1000**(1-1/1.5)), 'b', label = '$\\tau = 1.5$')
-plt.plot(np.linspace(1000,8000), (np.linspace(1000,8000)**(1/2))*(1000**(1-1/2)), 'g', label = '$\\tau = 2$')
-plt.plot(np.linspace(1000,8000), (np.linspace(1000,8000)**(1/2.5))*(1000**(1-1/2.5)), 'r', label = '$\\tau = 2.5$')
-plt.legend()
-plt.ylabel('$f_{out}$ [Hz]')
-plt.xlabel('$f_{in}$ [Hz]')
+plt.figure(figsize=(10,5))
+plt.plot(np.linspace(0,fs/2,int(len(signal)/2)),np.abs(np.fft.fft(signal))[0:int(len(signal)/2)], color = 'C0')
+plt.plot(np.linspace(0,fs/2,int(len(signal)/2)),np.abs(np.fft.fft(signal_comp))[0:int(len(signal)/2)], color = 'C1')
+plt.ylabel('Magnitude')
+plt.xlabel('Frequency [Hz]')
+plt.xlim(0,6000)
 plt.grid()
-plt.savefig('figures/nonlinear_frequency_compression.pdf')
+#plt.savefig('figures/comb_combo.pdf')
+
+plt.figure(figsize=(10,5))
+#plt.plot(np.linspace(0,fs/2,int(len(signal)/2)),np.abs(np.fft.fft(signal))[0:int(len(signal)/2)])
+plt.plot(np.linspace(0,fs/2,int(len(signal)/2)),np.abs(np.fft.fft(signal_comp))[0:int(len(signal)/2)], color = 'C1')
+plt.ylabel('Magnitude')
+plt.xlabel('Frequency [Hz]')
+plt.xlim(0,6000)
+plt.grid()
+#plt.savefig('figures/comb_new.pdf')
+
+
+sig = y
+y_fft = fftpack.fft(y)
+y_ny = fftpack.ifft(y_fft)
+librosa.output.write_wav('sound/ny_lyd.wav', y_ny, sr)
+
+
+#plt.figure(figsize=(16,8))
+#plt.subplots_adjust(hspace = 0.45)
+#plt.subplot(411)
+#plt.plot(signal)
+#plt.ylabel('Amplitude')
+#plt.xlabel('Time [s]')
+#plt.subplot(412)
+#plt.plot(np.abs(np.fft.fft(signal))[0:int(len(signal)/2)])
+#plt.ylabel('Magnitude')
+#plt.xlabel('Frequency [Hz]')
+#plt.subplot(413)
+#plt.plot(signal_comp)
+#plt.ylabel('Amplitude')
+#plt.xlabel('Time [s]')
+#plt.subplot(414)
+#plt.plot(np.abs(np.fft.fft(signal_comp))[0:int(len(signal)/2)])
+#plt.ylabel('Magnitude')
+#plt.xlabel('Frequency [Hz]')
+#
+#plt.figure(figsize=(16,8))
+#plt.subplots_adjust(hspace = 0.45)
+#plt.subplot(411)
+#plt.plot(signal)
+#plt.ylabel('Amplitude')
+#plt.xlabel('Time [s]')
+#plt.subplot(412)
+#plt.plot(np.abs(np.fft.fft(signal))[0:int(len(signal)/2)])
+#plt.ylabel('Magnitude')
+#plt.xlabel('Frequency [Hz]')
+#plt.subplot(413)
+#plt.plot(signal_comp2)
+#plt.ylabel('Amplitude')
+#plt.xlabel('Time [s]')
+#plt.subplot(414)
+#plt.plot(np.abs(np.fft.fft(signal_comp2))[0:int(len(signal)/2)])
+#plt.ylabel('Magnitude')
+#plt.xlabel('Frequency [Hz]')
+
+#plt.figure(figsize=(10,4))
+#plt.plot(np.linspace(0,8000), np.linspace(0,int(8000*0.7)), 'b', label = '$\\tau = 0.7$')
+#plt.plot(np.linspace(0,8000), np.linspace(0,int(8000*0.6)), 'g', label = '$\\tau = 0.6$')
+#plt.plot(np.linspace(0,8000), np.linspace(0,int(8000*0.5)), 'r', label = '$\\tau = 0.5$')
+#plt.legend()
+#plt.ylabel('$f_{out}$ [Hz]')
+#plt.xlabel('$f_{in}$ [Hz]')
+#plt.grid()
+#plt.savefig('figures/linear_frequency_compression.pdf')
+#
+#plt.figure(figsize=(10,4))
+#plt.axhline(y=1000, xmax=0.16, color = 'k', linestyle = '--')
+#plt.axvline(x=1000, ymax=0.27, color = 'k', linestyle = '--')
+#plt.plot(np.linspace(0,1000), np.linspace(0,1000), 'k')
+#plt.plot(np.linspace(1000,8000), (np.linspace(1000,8000)**(1/1.5))*(1000**(1-1/1.5)), 'b', label = '$\\tau = 1.5$')
+#plt.plot(np.linspace(1000,8000), (np.linspace(1000,8000)**(1/2))*(1000**(1-1/2)), 'g', label = '$\\tau = 2$')
+#plt.plot(np.linspace(1000,8000), (np.linspace(1000,8000)**(1/2.5))*(1000**(1-1/2.5)), 'r', label = '$\\tau = 2.5$')
+#plt.legend()
+#plt.ylabel('$f_{out}$ [Hz]')
+#plt.xlabel('$f_{in}$ [Hz]')
+#plt.grid()
+#plt.savefig('figures/nonlinear_frequency_compression.pdf')

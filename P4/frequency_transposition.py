@@ -8,8 +8,10 @@ Created on Thu May 14 13:12:30 2020
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import signal as ss
+from scipy import io
 import librosa
 import librosa.display
+import scipy.fftpack as fftpack
 
 
 def window(window_name, M):
@@ -35,12 +37,12 @@ def filtering(x, fir_filter):
     return y
 
 
-filename = 'sound/Hey.wav'
-y, sr = librosa.load(filename)
+filename = 'sound/jacob_snak.wav'
+y, sr = librosa.core.load(filename, sr = None)
 
 data1 = filtering(y, fir_bandfilter('hamming', 50, 200, 4000, sr))
 
-data2 = ss.decimate(data1, 2, ftype = 'fir')
+data2 = ss.decimate(data1, 4, ftype = 'fir')
 
 
 def fsinew(J = 13, fs = 2**13 , freq1 = 3100, freq2 = 1000, freq3 = 3300, freq4 = 500, 
@@ -87,7 +89,7 @@ def transposition2(data, start_frq, slut_frq, fs):
 
 
 def transposition(data, start_frq, fs):
-    data_fft = abs(np.fft.fft(data))[0:int(len(data)/2)]
+    data_fft = np.abs(fftpack.fft(data))[0:int(len(data)/2)]
     start_frq = int(start_frq * (len(data)/fs))
     source_up = start_frq*2
     target_down = int(start_frq/2)
@@ -103,26 +105,107 @@ def transposition(data, start_frq, fs):
             data_fft[k + target_down] = data_target[k] + data_source[i]
             test[k] = i
             k += 1
-    return data_fft, test, data_source
+    #data_fft[start_frq : source_up] = np.zeros(len(data_fft[start_frq : source_up]))
+    return data_fft
+
+def transposition3(data, start_frq, fs):
+    data_fft = np.abs(np.fft.fft(data))[0:int(len(data)/2)]
+    start_frq = int(start_frq * (len(data)/fs))
+    source_up = start_frq*2
+    target_down = int(start_frq/2)
+    data_source = data_fft[start_frq : source_up]
+    data_target = data_fft[target_down: start_frq]
+    max_punkt = np.where(data_source == np.amax(data_source))[0][0] + start_frq
+    octav_down = int(max_punkt/2)
+    k=0
+    for i in range(len(data_source)):
+        data_fft[k + start_frq-octav_down] =  data_source[i]
+        k += 1
+    #data_fft[start_frq : source_up] = np.zeros(len(data_fft[start_frq : source_up]))
+    return data_fft
+
+def transposition4(data, start_frq, fs):
+    data_fft = np.abs(fftpack.rfft(data))#[0:int(len(data)/2)]
+    start_frq = int(start_frq * (len(data)/fs))
+    source_up = start_frq*2
+    target_down = int(start_frq/2)
+    data_source = data_fft[start_frq : source_up]
+    data_target = data_fft[target_down: start_frq]
+    max_punkt = np.where(data_source == np.amax(data_source))[0][0] + start_frq
+    octav_down = int(max_punkt/2)
+    k=0
+    data_new = np.zeros(len(data_fft))
+    for i in range(len(data_source)):
+        if start_frq + i - octav_down < start_frq and \
+        start_frq + i - octav_down > target_down:
+            data_new[k + target_down] = data_source[i]
+            k += 1
+
+    #data_fft[start_frq : source_up] = np.zeros(len(data_fft[start_frq : source_up]))
+    return data_new
 
 
-
-plt.figure(figsize = (10, 5))
 start_frq = 2000
 slut_frq = 4000
-hej, test, source = transposition(data2, start_frq, sr/2)
-data = abs(np.fft.fft(data2))[0:int(len(data2)/2)]
+data = y
+frq = sr
+hej = transposition(data, start_frq, frq)
+hej2 = transposition3(data, start_frq, frq)
+hej3 = transposition4(data, start_frq, frq)
+data = abs(np.fft.fft(data))[0:int(len(data)/2)]
 
 
-plt.plot(np.linspace(0,sr/4, len(hej)), abs(hej))
-plt.plot(np.linspace(0,sr/4, len(data)), abs(data))
-plt.plot(np.linspace(2000,3000, 1000), abs(data[2000:3000]))
+plt.figure(figsize=(10,5))
+#plt.plot(np.linspace(0,sr/4, len(hej)), abs(hej))
+#plt.title('Original Signal', fontsize = 20)
+plt.plot(np.linspace(0,frq/2, len(data)), abs(data), label = 'Original Signal', color='C0')
 for i in [1000,2000,4000]: #X-værdier for lodrette streger
     plt.axvline(x=i, color='black', linestyle='dotted')
+plt.xlim(0, 6000)
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('Amplityde')
+plt.grid()
+plt.savefig('figures/transposition_original_signal.pdf')
+    
+plt.figure(figsize=(10,5))
+#plt.title('Original Signal With Source Octave Moved', fontsize = 20)
+plt.plot(np.linspace(0,frq/2, len(hej2)), abs(hej2), label = 'Signal', color='C1')
+plt.plot(np.linspace(0,frq/2, len(data)), abs(data), label = 'Signal', color='C0')
+for i in [1000,2000,4000]: #X-værdier for lodrette streger
+    plt.axvline(x=i, color='black', linestyle='dotted')
+plt.xlim(0, 6000)
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('Amplityde')
+plt.grid()
+plt.savefig('figures/transposition_combo_signal.pdf')
 
-#hej2 = np.fft.ifft(hej)
-#
-#librosa.output.write_wav('sound/transposition_test.wav', hej2, sr/2)
+plt.figure(figsize=(10,5))
+#plt.title('Original Signal With Transpositioned region', fontsize = 20)
+plt.plot(np.linspace(0,frq/2, len(hej3)), abs(hej3), label = 'Signal', color='C1')
+plt.plot(np.linspace(0,frq/2, len(data)), abs(data), label = 'Signal', color='C0')
+for i in [1000,2000,4000]: #X-værdier for lodrette streger
+    plt.axvline(x=i, color='black', linestyle='dotted')
+plt.xlim(0, 6000)
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('Amplityde')
+plt.grid()
+plt.savefig('figures/transposition_combo_cut_signal.pdf')
+
+plt.figure(figsize=(10,5))
+#plt.title('Modified Signal', fontsize = 20)
+plt.plot(np.linspace(0,frq/2, len(hej)), abs(hej), label = 'Signal', color='C1')
+#plt.plot(np.linspace(0,sr/4, len(data)), abs(data), label = 'Signal', color='C1')
+for i in [1000,2000,4000]: #X-værdier for lodrette streger
+    plt.axvline(x=i, color='black', linestyle='dotted')
+plt.xlim(0, 6000)
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('Amplityde')
+plt.grid()
+plt.savefig('figures/transposition_new_signal.pdf')
+
+
+hej_ny = fftpack.irfft(hej)
+librosa.output.write_wav('sound/ny_lyd.wav', hej_ny, sr)
 
 #def fir_bandfilter(window, M, fc_low, fc_high, fs):
 #    cutoff = [fc_low, fc_high]

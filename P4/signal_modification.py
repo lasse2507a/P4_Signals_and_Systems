@@ -6,11 +6,12 @@ import librosa
 import librosa.display
 
 
+
 # =============================================================================
 # Import of Data
 # =============================================================================
-filename = 'sound/vokaler.wav'
-y, sr = librosa.load(filename)
+filename = 'sound/jacob_snak.wav'
+y, sr = librosa.load(filename, sr = None)
 
 
 # =============================================================================
@@ -93,7 +94,8 @@ def filtering(x, fir_filter):
 
 
 def transposition(data, start_frq, fs):
-    data_fft = abs(np.fft.fft(data))[0:int(len(data)/2)]
+    #D = np.abs(librosa.stft(data, n_fft=n_fft,  hop_length=512, window=window))
+    data_fft = data# abs(np.fft.fft(data))[0:int(len(data)/2)]
     start_frq = int(start_frq * (len(data)/fs))
     source_up = start_frq*2
     target_down = int(start_frq/2)
@@ -132,3 +134,50 @@ def nonlinear_freq_comp(signal, fc, tau):
 # Plotting
 # =============================================================================
 
+def transposition_short(data, start_frq, fs, f):
+    #D = np.abs(librosa.stft(data, n_fft=n_fft,  hop_length=512, window=window))
+    data_fft = data# abs(np.fft.fft(data))[0:int(len(data)/2)]
+    start_frq = int(start_frq/(fs/2/len(f)))
+    source_up = start_frq*2
+    target_down = int(start_frq/2)
+    for n in range(len(data_fft[:,0])):
+        data_source = data_fft[start_frq : source_up, n]
+        data_target = data_fft[target_down: start_frq, n]
+        max_punkt = np.where(data_source == np.amax(data_source))[0][0] + start_frq
+        octav_down = int(max_punkt/2)
+        k=0
+        for i in range(len(data_source)):
+            if start_frq + i - octav_down < start_frq and \
+            start_frq + i - octav_down > target_down:
+                data_fft[k + target_down, n] = data_target[k] + data_source[i]
+                k += 1
+        return data_fft
+
+data = y
+fs = sr
+down_with = 5
+data_filtered = filtering(data, fir_bandfilter('hamming', 50, 200, 4410, fs))
+data_down = ss.decimate(data, down_with)
+window_length = 20e-3 #s
+number_samp = int(fs/down_with*(window_length))
+D = np.abs(librosa.core.stft(data, n_fft=number_samp,  hop_length=512, window='hamming'))
+
+f, t, F = ss.stft(data_down, sr/5, 'hamming', nperseg = number_samp, noverlap = 0)
+
+
+h = np.zeros(len(F[:,0]), dtype = complex)
+for i in range(len(F[:,0])):
+    h += F[:,i] 
+
+fft = np.fft.fft(data_down)[0:int(len(data_down)/2)]
+plt.plot(np.linspace(0,sr/5/2,int(len(data_down)/2)),np.abs(fft))
+plt.show()
+plt.plot(f,np.abs(h))
+plt.show()
+plt.plot(f,np.abs(F[:,160]), color = 'C0')
+
+trans = transposition_short(F, 2000, fs/down_with, f)
+
+t1, Fi = ss.istft(trans, sr/5,'hamming')
+
+librosa.output.write_wav('sound/ny_lyd.wav', Fi, int(sr/5))
