@@ -154,11 +154,11 @@ def transposition_short(data, start_frq, fs, f):
                 k += 1
     return data_fft
 
-data_down = y
+data = y
 fs = sr
 down_with = 5
-#data_filtered = filtering(data, fir_bandfilter('hamming', 50, 200, 4410, fs))
-#data_down = ss.decimate(data, down_with)
+data_filtered = filtering(data, fir_bandfilter('hamming', 50, 200, 4410, fs))
+data_down = ss.decimate(data_filtered, down_with)
 window_length = 20e-3 #s
 number_samp = int(fs/down_with*(window_length))
 #D = np.abs(librosa.core.stft(data, n_fft=number_samp,  hop_length=512, window='hamming'))
@@ -181,6 +181,6 @@ trans = transposition_short(F, 2000, fs, f)
 
 t1, Fi = ss.istft(trans, sr,'hamming')
 
-librosa.output.write_wav('sound/ny_lyd.wav', Fi, int(sr))
+librosa.output.write_wav('sound/ny_lyd.wav', Fi, int(sr/5))
 
 dif = trans-F
