@@ -140,6 +140,7 @@ def transposition_short(data, start_frq, fs, f):
     start_frq = int(start_frq/(fs/2/len(f)))
     source_up = start_frq*2
     target_down = int(start_frq/2)
+    #data27 = np.zeros_like(data_fft)
     for n in range(len(data_fft[:,0])):
         data_source = data_fft[start_frq : source_up, n]
         data_target = data_fft[target_down: start_frq, n]
@@ -151,18 +152,18 @@ def transposition_short(data, start_frq, fs, f):
             start_frq + i - octav_down > target_down:
                 data_fft[k + target_down, n] = data_target[k] + data_source[i]
                 k += 1
-        return data_fft
+    return data_fft
 
-data = y
+data_down = y
 fs = sr
 down_with = 5
-data_filtered = filtering(data, fir_bandfilter('hamming', 50, 200, 4410, fs))
-data_down = ss.decimate(data, down_with)
+#data_filtered = filtering(data, fir_bandfilter('hamming', 50, 200, 4410, fs))
+#data_down = ss.decimate(data, down_with)
 window_length = 20e-3 #s
 number_samp = int(fs/down_with*(window_length))
-D = np.abs(librosa.core.stft(data, n_fft=number_samp,  hop_length=512, window='hamming'))
+#D = np.abs(librosa.core.stft(data, n_fft=number_samp,  hop_length=512, window='hamming'))
 
-f, t, F = ss.stft(data_down, sr/5, 'hamming', nperseg = number_samp, noverlap = 0)
+f, t, F = ss.stft(data_down, sr, 'hamming', nperseg = number_samp, noverlap = None)
 
 
 h = np.zeros(len(F[:,0]), dtype = complex)
@@ -170,14 +171,16 @@ for i in range(len(F[:,0])):
     h += F[:,i] 
 
 fft = np.fft.fft(data_down)[0:int(len(data_down)/2)]
-plt.plot(np.linspace(0,sr/5/2,int(len(data_down)/2)),np.abs(fft))
+plt.plot(np.linspace(0,sr/2,int(len(data_down)/2)),np.abs(fft))
 plt.show()
 plt.plot(f,np.abs(h))
 plt.show()
 plt.plot(f,np.abs(F[:,160]), color = 'C0')
 
-trans = transposition_short(F, 2000, fs/down_with, f)
+trans = transposition_short(F, 2000, fs, f)
 
-t1, Fi = ss.istft(trans, sr/5,'hamming')
+t1, Fi = ss.istft(trans, sr,'hamming')
 
-librosa.output.write_wav('sound/ny_lyd.wav', Fi, int(sr/5))
+librosa.output.write_wav('sound/ny_lyd.wav', Fi, int(sr))
+
+dif = trans-F
