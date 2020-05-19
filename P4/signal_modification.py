@@ -7,6 +7,7 @@ import librosa.display
 
 
 
+
 # =============================================================================
 # Import of Data
 # =============================================================================
@@ -80,6 +81,12 @@ def fir_bandfilter(window, M, fc_low, fc_high, fs):
     return bandfilter
 
 
+def fir_lowfilter(window, M, fc, fs):
+    cutoff = fc
+    bandfilter = ss.firwin(M+1, cutoff, window = window, fs = fs)
+    return bandfilter
+
+
 def zeropad_fft(h, zeros=2**15):
     h_pad = np.zeros(zeros)
     h_pad[0:len(h)] = h
@@ -112,32 +119,8 @@ def transposition(data, start_frq, fs):
     return data_fft
 
 
-def linear_freq_comp(signal, tau):
-    signal = np.abs(np.fft.fft(signal))[0:int(len(signal)/2)]
-    region_comp = np.zeros(len(signal))
-    for i in range(len(signal)):
-        region_comp[int(i*tau)] += signal[i]
-    signal_comp = np.fft.ifft(region_comp)
-    return signal_comp
-
-
-def nonlinear_freq_comp(signal, fc, tau):
-    signal = np.abs(np.fft.fft(signal))[0:int(len(signal)/2)]
-    signal_comp = np.zeros(len(signal))
-    for i in range(len(signal)-fc-1):
-        signal_comp[int(((i+fc+1)**(1/tau))*(fc**(1-1/tau)))] += signal[i+fc+1]
-    signal_comp = np.fft.ifft(np.append(signal[0:fc], signal_comp[fc:]))
-    return signal_comp
-
-
-# =============================================================================
-# Plotting
-# =============================================================================
-
-def transposition_short(data, start_frq, fs, f):
-    #D = np.abs(librosa.stft(data, n_fft=n_fft,  hop_length=512, window=window))
-    data_fft = data# abs(np.fft.fft(data))[0:int(len(data)/2)]
-    test = np.zeros_like(data_fft)
+def transposition_short(data, start_frq, fs, nperseg, window = 'hamming'):
+    f, t, data_fft = ss.stft(data, fs, window, nperseg = nperseg, noverlap = None)
     start_frq = int(start_frq/(fs/2/len(f)))
     source_up = start_frq*2
     target_down = int(start_frq/2)
@@ -153,42 +136,81 @@ def transposition_short(data, start_frq, fs, f):
             start_frq + i - octav_down > target_down:
                 data_fft[k + target_down, n] = data_target[k] + data_source[i]
                 k += 1
-        data_fft[40:89, n] = 0
-    return data_fft, test
+    t1, data_new = ss.istft(data_fft, fs ,window)
+    return data_new
+
+
+def linear_freq_comp(signal, tau):
+    signal = np.abs(np.fft.fft(signal))[0:int(len(signal)/2)]
+    region_comp = np.zeros(len(signal))
+    for i in range(len(signal)):
+        region_comp[int(i*tau)] += signal[i]
+    signal_comp = np.fft.ifft(region_comp)
+    return signal_comp
+
+
+def linear_freq_comp_short(signal, tau, fs, nperseg, window = 'hamming'):
+    f, t, signal = ss.stft(signal, fs, window, nperseg = nperseg, noverlap = None)
+    region_comp = np.zeros_like(signal)
+    for n in range(len(signal[0,:])): 
+        for i in range(len(signal[:,0])):
+            region_comp[int(i*tau),n] += signal[i,n]
+    t1, signal_comp = ss.istft(region_comp, fs, window)
+    return signal_comp
+
+
+def nonlinear_freq_comp(signal, fc, tau):
+    signal = np.abs(np.fft.fft(signal))[0:int(len(signal)/2)]
+    signal_comp = np.zeros(len(signal))
+    for i in range(len(signal)-fc-1):
+        signal_comp[int(((i+fc+1)**(1/tau))*(fc**(1-1/tau)))] += signal[i+fc+1]
+    signal_comp = np.fft.ifft(np.append(signal[0:fc], signal_comp[fc:]))
+    return signal_comp
+
+
+def nonlinear_freq_comp_short(signal, fc, tau, fs, nperseg, window = 'hamming'):
+    f, t, signal = ss.stft(signal, fs, window, nperseg = nperseg, noverlap = None)
+    fc = int(fc/(fs/2/len(f)))
+    signal_comp = np.zeros_like(signal)
+    signal_comp1 = signal
+    for n in range(len(signal[0,:])):
+        for i in range(len(signal[:,0])-fc-1):
+            signal_comp[int(((i+fc+1)**(1/tau))*(fc**(1-1/tau))), n] += signal[(i+fc+1), n]
+        signal_comp[0:fc, n] = signal_comp1[0:fc,n]
+    t1, signal_new = ss.istft(signal_comp, fs, window)
+    return signal_new
+
+# =============================================================================
+# Plotting
+# =============================================================================
+
+
 
 data = y
 fs = sr
 down_with = 5
-data_filtered = filtering(data, fir_bandfilter('hamming', 50, 200, 4410, fs))
-data_down = ss.decimate(data_filtered, down_with)
 window_length = 20e-3 #s
+data_filtered = filtering(data, fir_bandfilter('hamming', 50, 1, 4410, fs))
+data_down = ss.decimate(data_filtered, down_with)
 number_samp = int(fs/down_with*(window_length))
-#D = np.abs(librosa.core.stft(data, n_fft=number_samp,  hop_length=512, window='hamming'))
 
-f, t, F = ss.stft(data_down, sr/5, 'hamming', nperseg = number_samp, noverlap = None)
 
-f7, t7, F1 = ss.stft(data_down, sr/5, 'hamming', nperseg = number_samp, noverlap = None)   
+tau_non = 1.5
+comp_non_start = 1000
+data_comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
+librosa.output.write_wav('sound/comp_non_jacob_snak_tau{}_start{}.wav'\
+                         .format(tau_non, comp_non_start), data_comp_non, int(fs/down_with))
 
-h = np.zeros(len(F[:,0]), dtype = complex)
-for i in range(len(F[:,0])):
-    h += F[:,i] 
 
-fft = np.fft.fft(data_down)[0:int(len(data_down)/2)]
-plt.plot(np.linspace(0,sr/2,int(len(data_down)/2)),np.abs(fft))
-plt.show()
-plt.plot(f,np.abs(h))
-plt.show()
-plt.plot(f,np.abs(F[:,160]), color = 'C0')
+tau_lin = 0.5
+data_comp = linear_freq_comp_short(data_down, tau_lin, fs/down_with, number_samp)
+librosa.output.write_wav('sound/comp_lin_jacob_snak_tau{}.wav'\
+                         .format(tau_lin, ), data_comp, int(fs/down_with))
 
-trans, test = transposition_short(F, 2000, fs, f)
 
-for i in range(len(F1[0,:])):
-    F1[40:89,i] = 0
+trans_start = 2000
+data_trans = transposition_short(data_down, trans_start, fs/down_with, number_samp)
+librosa.output.write_wav('sound/trans_jacob_snak_start{}.wav'\
+                         .format(trans_start), data_trans, int(fs/down_with))
 
-t1, Fi = ss.istft(trans, sr,'hamming')
-t2, test2 = ss.istft(F1, sr,'hamming')
 
-librosa.output.write_wav('sound/ny_lyd.wav', Fi, int(sr/5))
-librosa.output.write_wav('sound/ny_lyd2.wav', test2, int(sr/5))
-
-dif = test2-Fi
