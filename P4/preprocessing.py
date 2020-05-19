@@ -77,7 +77,7 @@ def h_d(N = 87, fc = 4000/22050):
 # =============================================================================
 h_hann = h_d()*window('hann', 88)
 h_hamming = h_d()*window('hamming', 88)
-h_blackman = h_d(131)*window('blackman', 132)
+h_blackman = h_d()window('blackman', 132)
 
 H_hann = zeropad_fft(h_hann)
 H_hamming = zeropad_fft(h_hamming)
