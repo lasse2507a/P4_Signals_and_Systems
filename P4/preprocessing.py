@@ -65,38 +65,53 @@ def zeropad_fft(h, zeros=2**13):
     return H_pad
 
 
-def h_d(N = 87, fc = 4000/22050):
-    h_d = np.zeros(N+1)
-    for k in range(N+1):
-        h_d[k] = (np.sin(fc*(k-N/2)))/(np.pi*(k-N/2))
-    return h_d
-
-
 # =============================================================================
 # Plotting
 # =============================================================================
-h_hann = h_d()*window('hann', 88)
-h_hamming = h_d()*window('hamming', 88)
-h_blackman = h_d(131)*window('blackman', 132)
+h_hann = ss.firwin(192, 4000, window = 'hann', fs = 48000)
+h_hamming = ss.firwin(192, 4000, window = 'hamming', fs = 48000)
 
 H_hann = zeropad_fft(h_hann)
 H_hamming = zeropad_fft(h_hamming)
-H_blackman = zeropad_fft(h_blackman)
 
-plt.figure(figsize=(10,8))
+plt.figure(figsize=(12,4))
+plt.plot(h_hann, ':', color = 'r', label = 'Hann, N = 191')
+plt.plot(h_hamming, ':', color = 'b', label = 'Hamming, N = 191')
+plt.legend()
+plt.xlabel('Samples')
+plt.ylabel('Amplitude')
+plt.grid()
+plt.savefig('figures/preprocessing_filter_coefficients.pdf')
+
+plt.figure(figsize=(12,10))
 plt.subplot(311)
-plt.plot(h_hann, ':', color = 'r')
-plt.plot(h_hamming, ':', color = 'm')
-plt.plot(h_blackman, ':', color = 'k')
+plt.plot(np.linspace(0,24000,len(H_hann)), H_hann, color = 'r', label = 'Hann, N = 191')
+plt.plot(np.linspace(0,24000,len(H_hamming)), H_hamming, color = 'b', label = 'Hamming, N = 191')
+plt.legend()
+plt.xlim(0, 24000)
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('Magnitude')
+plt.grid()
 plt.subplot(312)
-plt.plot(H_hann, color = 'r')
-plt.plot(H_hamming, color = 'm')
-plt.plot(H_blackman,  color = 'k')
+plt.plot(np.linspace(0,24000,len(H_hann)), H_hann, color = 'r', label = 'Hann, N = 191')
+plt.plot(np.linspace(0,24000,len(H_hamming)), H_hamming, color = 'b', label = 'Hamming, N = 191')
+plt.legend()
+plt.xlim(0, 5000)
+plt.ylim(0.95,1.05)
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('Magnitude')
+plt.grid()
 plt.subplot(313)
-plt.plot(np.linspace(0, 22050, len(H_hann)), 20*np.log10(H_hann), color = 'r')
-plt.plot(np.linspace(0, 22050, len(H_hamming)), 20*np.log10(H_hamming), color = 'm')
-plt.plot(np.linspace(0, 22050, len(H_blackman)), 20*np.log10(H_blackman), color = 'k')
+plt.plot(np.linspace(0, 24000, len(H_hann)), 20*np.log10(H_hann), color = 'r', label = 'Hann, N = 191')
+plt.plot(np.linspace(0, 24000, len(H_hamming)), 20*np.log10(H_hamming), color = 'b', label = 'Hamming, N = 191')
+plt.legend()
 plt.ylim(-100,10)
-print(np.max(np.where(20*np.log10(H_hann) > -3)))
-print(np.max(np.where(20*np.log10(H_hamming) > -3)))
-print(np.max(np.where(20*np.log10(H_blackman) > -3)))
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('Magnitude [dB]')
+plt.grid()
+plt.savefig('figures/preprocessing_magnitude_dB.pdf')
+
+print(max(20*np.log10(H_hamming)))
+print(max(20*np.log10(H_hann)))
+print(np.where(20*np.log10(H_hann) > -3)[-1][-1]*(24000/4096))
+print(np.where(20*np.log10(H_hamming) > -3)[-1][-1]*(24000/4096))
