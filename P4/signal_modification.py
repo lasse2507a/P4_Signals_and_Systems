@@ -188,10 +188,12 @@ def nonlinear_freq_comp_short(signal, fc, tau, fs, nperseg, window = 'hamming'):
 data = y
 fs = sr
 down_with = 5
-window_length = 20e-3 #s
+window_length = 8e-3 #s
 data_filtered = filtering(data, fir_bandfilter('hamming', 300, 1, 4410, fs))
 data_down = ss.decimate(data_filtered, down_with)
 number_samp = int(fs/down_with*(window_length))
+
+librosa.output.write_wav('sound/prepreoses.wav',data_down, int(fs/down_with))
 
 
 #Tranposition
@@ -210,10 +212,10 @@ librosa.output.write_wav('sound/trans_jacob_snak_start{}.wav'\
 #
 #
 ##Linear compresion
-tau_lin = 0.5
-data_comp, comp = linear_freq_comp_short(data_down, tau_lin, fs/down_with, number_samp)
-librosa.output.write_wav('sound/comp_lin_jacob_snak_tau{}.wav'\
-                         .format(tau_lin, ), data_comp, int(fs/down_with))
+#tau_lin = 0.5
+#data_comp, comp = linear_freq_comp_short(data_down, tau_lin, fs/down_with, number_samp)
+#librosa.output.write_wav('sound/comp_lin_jacob_snak_tau{}.wav'\
+#                         .format(tau_lin, ), data_comp, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
@@ -223,13 +225,13 @@ librosa.output.write_wav('sound/comp_lin_jacob_snak_tau{}.wav'\
 #spectrogram_lib(data_comp, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
 #plt.savefig('figures/lin_comp_spec.pdf')
 #
-#
-##Nonlinear compresion
-tau_non = 1.5
-comp_non_start = 1000
-data_comp_non, comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
-librosa.output.write_wav('sound/comp_non_jacob_snak_tau{}_start{}.wav'\
-                         .format(tau_non, comp_non_start), data_comp_non, int(fs/down_with))
+##
+###Nonlinear compresion
+#tau_non = 1.5
+#comp_non_start = 1000
+#data_comp_non, comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
+#librosa.output.write_wav('sound/comp_non_jacob_snak_tau{}_start{}.wav'\
+#                         .format(tau_non, comp_non_start), data_comp_non, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
