@@ -70,7 +70,9 @@ def spectrogram_lib(data, sr, n_fft=2048, hop_length=512, window='hann'):
     DB = librosa.amplitude_to_db(D, ref=np.max)
     librosa.display.specshow(DB, sr=sr, hop_length=hop_length, x_axis='time', y_axis='log')
     plt.colorbar(format='%+2.0f dB')
-    #plt.title('Spectrogram')
+    #plt.title('Spectrogram', fontsize = 20)
+    plt.xlabel('Tiem [s]')
+    plt.ylabel('Frequency [Hz]')
     #plt.savefig('spectrogram/vokaler_{}.pdf'.format(int(n_fft)))
    
 
@@ -183,8 +185,19 @@ def nonlinear_freq_comp_short(signal, fc, tau, fs, nperseg, window = 'hamming'):
 # Plotting
 # =============================================================================
 
+plt.figure(figsize = (10,5))
+spectrogram_lib(y, sr, n_fft=int(2048/2), hop_length=512, window='hamming')
+plt.xlabel('Time [s]')
+plt.ylabel('Frequency [Hz]')
+plt.savefig('spectrogram/vokaler_1024.pdf')
+plt.show()
+plt.figure(figsize = (10,5))
+spectrogram_lib(y, sr, n_fft=int(2048*2), hop_length=512, window='hamming')
+plt.xlabel('Time [s]')
+plt.ylabel('Frequency [Hz]')
+plt.savefig('spectrogram/vokaler_4096.pdf')
 
-
+#
 data = y
 fs = sr
 down_with = 5
@@ -201,44 +214,45 @@ trans_start = 2000
 data_trans, trans = transposition_short(data_down, trans_start, fs/down_with, number_samp)
 librosa.output.write_wav('sound/trans_jacob_snak_start{}.wav'\
                          .format(trans_start), data_trans, int(fs/down_with))
-#plt.figure(figsize = (16,5))
-#plt.subplot(121)
-#plt.title('Original Signal')
-#spectrogram_lib(data_down, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.subplot(122)
-#plt.title('Transpositioned Signal')
-#spectrogram_lib(data_trans, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.savefig('figures/trans_spec.pdf')
+plt.figure(figsize = (16,5))
+plt.subplot(121)
+plt.title('Original Signal')
+spectrogram_lib(data_down, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
+plt.xlabel('Time [s]')
+plt.subplot(122)
+plt.title('Transpositioned Signal')
+spectrogram_lib(data_trans, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
+plt.savefig('figures/trans_spec.pdf')
+
+
+#Linear compresion
+tau_lin = 0.5
+data_comp, comp = linear_freq_comp_short(data_down, tau_lin, fs/down_with, number_samp)
+librosa.output.write_wav('sound/comp_lin_jacob_snak_tau{}.wav'\
+                         .format(tau_lin, ), data_comp, int(fs/down_with))
+plt.figure(figsize = (16,5))
+plt.subplot(121)
+plt.title('Original Signal')
+spectrogram_lib(data_down, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
+plt.subplot(122)
+plt.title('Linear Compresioned Signal')
+spectrogram_lib(data_comp, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
+plt.savefig('figures/lin_comp_spec.pdf')
+
 #
-#
-##Linear compresion
-#tau_lin = 0.5
-#data_comp, comp = linear_freq_comp_short(data_down, tau_lin, fs/down_with, number_samp)
-#librosa.output.write_wav('sound/comp_lin_jacob_snak_tau{}.wav'\
-#                         .format(tau_lin, ), data_comp, int(fs/down_with))
-#plt.figure(figsize = (16,5))
-#plt.subplot(121)
-#plt.title('Original Signal')
-#spectrogram_lib(data_down, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.subplot(122)
-#plt.title('Linear Compresioned Signal')
-#spectrogram_lib(data_comp, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.savefig('figures/lin_comp_spec.pdf')
-#
-##
-###Nonlinear compresion
-#tau_non = 1.5
-#comp_non_start = 1000
-#data_comp_non, comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
-#librosa.output.write_wav('sound/comp_non_jacob_snak_tau{}_start{}.wav'\
-#                         .format(tau_non, comp_non_start), data_comp_non, int(fs/down_with))
-#plt.figure(figsize = (16,5))
-#plt.subplot(121)
-#plt.title('Original Signal')
-#spectrogram_lib(data_down, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.subplot(122)
-#plt.title('Nonlinear Compresioned Signal')
-#spectrogram_lib(data_comp_non, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.savefig('figures/nonlin_comp_spec.pdf')
+##Nonlinear compresion
+tau_non = 1.5
+comp_non_start = 1000
+data_comp_non, comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
+librosa.output.write_wav('sound/comp_non_jacob_snak_tau{}_start{}.wav'\
+                         .format(tau_non, comp_non_start), data_comp_non, int(fs/down_with))
+plt.figure(figsize = (16,5))
+plt.subplot(121)
+plt.title('Original Signal')
+spectrogram_lib(data_down, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
+plt.subplot(122)
+plt.title('Nonlinear Compresioned Signal')
+spectrogram_lib(data_comp_non, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
+plt.savefig('figures/nonlin_comp_spec.pdf')
 
 
