@@ -110,8 +110,3 @@ plt.xlabel('Frequency [Hz]')
 plt.ylabel('Magnitude [dB]')
 plt.grid()
 plt.savefig('figures/preprocessing_magnitude_dB.pdf')
-
-print(max(20*np.log10(H_hamming)))
-print(max(20*np.log10(H_hann)))
-print(np.where(20*np.log10(H_hann) > -3)[-1][-1]*(24000/4096))
-print(np.where(20*np.log10(H_hamming) > -3)[-1][-1]*(24000/4096))
