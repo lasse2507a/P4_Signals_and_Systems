@@ -215,8 +215,7 @@ librosa.output.write_wav('sound/prepreoses.wav',data_down, int(fs/down_with))
 #Tranposition
 trans_start = 2000
 data_trans, trans = transposition_short(data_down, trans_start, fs/down_with, number_samp)
-librosa.output.write_wav('sound/trans_lyd_1.wav'\
-                         .format(trans_start), data_trans, int(fs/down_with))
+librosa.output.write_wav('sound/trans_lyd_1.wav', data_trans, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
@@ -231,8 +230,7 @@ librosa.output.write_wav('sound/trans_lyd_1.wav'\
 #Linear compresion
 tau_lin = 0.7
 data_comp, comp = linear_freq_comp_short(data_down, tau_lin, fs/down_with, number_samp)
-librosa.output.write_wav('sound/lincomp_lyd_1.wav'\
-                         .format(tau_lin, ), data_comp, int(fs/down_with))
+librosa.output.write_wav('sound/lincomp_lyd_1.wav', data_comp, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
@@ -247,8 +245,7 @@ librosa.output.write_wav('sound/lincomp_lyd_1.wav'\
 tau_non = 1.5
 comp_non_start = 1000
 data_comp_non, comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
-librosa.output.write_wav('sound/nonlincomp_lyd_1.wav'\
-                         .format(tau_non, comp_non_start), data_comp_non, int(fs/down_with))
+librosa.output.write_wav('sound/nonlincomp_lyd_1.wav', data_comp_non, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
