@@ -9,7 +9,7 @@ import librosa.display
 # =============================================================================
 # Import of Data
 # =============================================================================
-filename = 'sound/Forsoeg/Uredigeret/Sætning3.wav'
+filename = 'sound/Forsoeg/Uredigeret/Sætning10.wav'
 y, sr = librosa.load(filename, sr = None)
 
 
@@ -209,7 +209,7 @@ number_samp = int(fs/down_with*(window_length))
 #Tranposition
 trans_start = 2000
 data_trans, trans = transposition_short(data_down, trans_start, fs/down_with, number_samp)
-librosa.output.write_wav('sound/Forsoeg/Transposition/trans_lyd_1.wav', data_trans, int(fs/down_with))
+librosa.output.write_wav('sound/Forsoeg/Transposition/trans_lyd_2.wav', data_trans, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
@@ -224,7 +224,7 @@ librosa.output.write_wav('sound/Forsoeg/Transposition/trans_lyd_1.wav', data_tra
 #Linear compresion
 tau_lin = 0.7
 data_comp, comp = linear_freq_comp_short(data_down, tau_lin, fs/down_with, number_samp)
-librosa.output.write_wav('sound/Forsoeg/Linear_Compression/lincomp_lyd_3.wav', data_comp, int(fs/down_with))
+librosa.output.write_wav('sound/Forsoeg/Linear_Compression/lincomp_lyd_9.wav', data_comp, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
@@ -239,7 +239,7 @@ librosa.output.write_wav('sound/Forsoeg/Linear_Compression/lincomp_lyd_3.wav', d
 tau_non = 1.5
 comp_non_start = 1000
 data_comp_non, comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
-librosa.output.write_wav('sound/Forsoeg/Nonlinear_Compression/nonlincomp_lyd_2.wav', data_comp_non, int(fs/down_with))
+librosa.output.write_wav('sound/Forsoeg/Nonlinear_Compression/nonlincomp_lyd_5.wav', data_comp_non, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
