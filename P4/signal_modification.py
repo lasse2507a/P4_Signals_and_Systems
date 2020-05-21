@@ -6,12 +6,10 @@ import librosa
 import librosa.display
 
 
-
-
 # =============================================================================
 # Import of Data
 # =============================================================================
-filename = 'sound/jacob_snak.wav'
+filename = 'sound/Forsoeg/Uredigeret/Sætning1.wav'
 y, sr = librosa.load(filename, sr = None)
 
 
@@ -181,10 +179,10 @@ def nonlinear_freq_comp_short(signal, fc, tau, fs, nperseg, window = 'hamming'):
     t1, signal_new = ss.istft(signal_comp, fs, window)
     return signal_new, signal_comp
 
+
 # =============================================================================
 # Plotting
 # =============================================================================
-
 #plt.figure(figsize = (10,5))
 #spectrogram_lib(y, sr, n_fft=int(2048/2), hop_length=512, window='hamming')
 #plt.xlabel('Time [s]')
@@ -215,7 +213,7 @@ librosa.output.write_wav('sound/prepreoses.wav',data_down, int(fs/down_with))
 #Tranposition
 trans_start = 2000
 data_trans, trans = transposition_short(data_down, trans_start, fs/down_with, number_samp)
-librosa.output.write_wav('sound/trans_lyd_1.wav', data_trans, int(fs/down_with))
+librosa.output.write_wav('sound/Forsoeg/Transposition/trans_lyd_1.wav', data_trans, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
@@ -230,7 +228,7 @@ librosa.output.write_wav('sound/trans_lyd_1.wav', data_trans, int(fs/down_with))
 #Linear compresion
 tau_lin = 0.7
 data_comp, comp = linear_freq_comp_short(data_down, tau_lin, fs/down_with, number_samp)
-librosa.output.write_wav('sound/lincomp_lyd_1.wav', data_comp, int(fs/down_with))
+librosa.output.write_wav('sound/Forsoeg/Linear_Compression/lincomp_lyd_1.wav', data_comp, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
@@ -245,7 +243,7 @@ librosa.output.write_wav('sound/lincomp_lyd_1.wav', data_comp, int(fs/down_with)
 tau_non = 1.5
 comp_non_start = 1000
 data_comp_non, comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
-librosa.output.write_wav('sound/nonlincomp_lyd_1.wav', data_comp_non, int(fs/down_with))
+librosa.output.write_wav('sound/Forsoeg/Nonlinear_Compression/nonlincomp_lyd_1.wav', data_comp_non, int(fs/down_with))
 #plt.figure(figsize = (16,5))
 #plt.subplot(121)
 #plt.title('Original Signal')
@@ -254,5 +252,4 @@ librosa.output.write_wav('sound/nonlincomp_lyd_1.wav', data_comp_non, int(fs/dow
 #plt.title('Nonlinear Compresioned Signal')
 #spectrogram_lib(data_comp_non, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
 #plt.savefig('figures/nonlin_comp_spec.pdf')
-
 
