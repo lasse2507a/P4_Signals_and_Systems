@@ -195,7 +195,7 @@ def nonlinear_freq_comp_short(signal, fc, tau, fs, nperseg, window = 'hamming'):
 #plt.ylabel('Frequency [Hz]')
 #plt.savefig('spectrogram/vokaler_4096.pdf')
 
-#
+
 data = y
 fs = sr
 down_with = 6
@@ -204,10 +204,6 @@ h_hann = ss.firwin(192, 4000, window = 'hann', fs = 48000)
 data_filtered = filtering(data, h_hann)
 data_down = ss.decimate(data_filtered, down_with)
 number_samp = int(fs/down_with*(window_length))
-
-
-
-librosa.output.write_wav('sound/prepreoses.wav',data_down, int(fs/down_with))
 
 
 #Tranposition
@@ -238,8 +234,8 @@ librosa.output.write_wav('sound/Forsoeg/Linear_Compression/lincomp_lyd_1.wav', d
 #spectrogram_lib(data_comp, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
 #plt.savefig('figures/lin_comp_spec.pdf')
 
-#
-##Nonlinear compresion
+
+#Nonlinear compresion
 tau_non = 1.5
 comp_non_start = 1000
 data_comp_non, comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
