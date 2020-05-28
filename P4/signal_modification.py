@@ -9,7 +9,7 @@ import librosa.display
 # =============================================================================
 # Import of Data
 # =============================================================================
-filename = 'sound/Forsoeg/Uredigeret/Sætning10.wav'
+filename = 'Forsoeg/kalibrering.wav'
 y, sr = librosa.load(filename, sr = None)
 
 
@@ -65,11 +65,11 @@ def spectrogram_lib(data, sr, n_fft=2048, hop_length=512, window='hann'):
     D = np.abs(librosa.stft(data, n_fft=n_fft,  hop_length=hop_length, window=window))
     #f, t, K = ss.stft(data, fs, 'hamming', n_fft)
     #librosa.display.specshow(D, sr=sr, x_axis='time', y_axis='linear')
-    DB = librosa.amplitude_to_db(D, ref=np.max)
+    DB = librosa.amplitude_to_db(D, np.max)
     librosa.display.specshow(DB, sr=sr, hop_length=hop_length, x_axis='time', y_axis='log')
     plt.colorbar(format='%+2.0f dB')
     #plt.title('Spectrogram', fontsize = 20)
-    plt.xlabel('Tiem [s]')
+    plt.xlabel('Time [s]')
     plt.ylabel('Frequency [Hz]')
     #plt.savefig('spectrogram/vokaler_{}.pdf'.format(int(n_fft)))
    
@@ -119,7 +119,7 @@ def transposition(data, start_frq, fs):
 
 
 def transposition_short(data, start_frq, fs, nperseg, window = 'hamming'):
-    f, t, data_fft = ss.stft(data, fs, window, nperseg = nperseg, noverlap = None)
+    f, t, data_fft = ss.stft(data, fs, window, nperseg = nperseg, noverlap = nperseg//3)
     start_frq = int(start_frq/(fs/2/len(f)))
     source_up = start_frq*2
     target_down = int(start_frq/2)
@@ -135,7 +135,7 @@ def transposition_short(data, start_frq, fs, nperseg, window = 'hamming'):
             start_frq + i - octav_down > target_down:
                 data_fft[k + target_down, n] = data_target[k] + data_source[i]
                 k += 1
-    t1, data_new = ss.istft(data_fft, fs ,window)
+    t1, data_new = ss.istft(data_fft, fs ,window, noverlap = nperseg//3)
     return data_new, data_fft
 
 
@@ -179,73 +179,4 @@ def nonlinear_freq_comp_short(signal, fc, tau, fs, nperseg, window = 'hamming'):
     t1, signal_new = ss.istft(signal_comp, fs, window)
     return signal_new, signal_comp
 
-
-# =============================================================================
-# Plotting
-# =============================================================================
-#plt.figure(figsize = (10,5))
-#spectrogram_lib(y, sr, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.xlabel('Time [s]')
-#plt.ylabel('Frequency [Hz]')
-#plt.savefig('spectrogram/vokaler_1024.pdf')
-#plt.show()
-#plt.figure(figsize = (10,5))
-#spectrogram_lib(y, sr, n_fft=int(2048*2), hop_length=512, window='hamming')
-#plt.xlabel('Time [s]')
-#plt.ylabel('Frequency [Hz]')
-#plt.savefig('spectrogram/vokaler_4096.pdf')
-
-
-data = y
-fs = sr
-down_with = 6
-window_length = 8e-3 #s
-h_hann = ss.firwin(192, 4000, window = 'hann', fs = 48000)
-data_filtered = filtering(data, h_hann)
-data_down = ss.decimate(data_filtered, down_with)
-number_samp = int(fs/down_with*(window_length))
-
-
-#Tranposition
-trans_start = 2000
-data_trans, trans = transposition_short(data_down, trans_start, fs/down_with, number_samp)
-librosa.output.write_wav('sound/Forsoeg/Transposition/trans_lyd_2.wav', data_trans, int(fs/down_with))
-#plt.figure(figsize = (16,5))
-#plt.subplot(121)
-#plt.title('Original Signal')
-#spectrogram_lib(data_down, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.xlabel('Time [s]')
-#plt.subplot(122)
-#plt.title('Transpositioned Signal')
-#spectrogram_lib(data_trans, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.savefig('figures/trans_spec.pdf')
-
-
-#Linear compresion
-tau_lin = 0.7
-data_comp, comp = linear_freq_comp_short(data_down, tau_lin, fs/down_with, number_samp)
-librosa.output.write_wav('sound/Forsoeg/Linear_Compression/lincomp_lyd_9.wav', data_comp, int(fs/down_with))
-#plt.figure(figsize = (16,5))
-#plt.subplot(121)
-#plt.title('Original Signal')
-#spectrogram_lib(data_down, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.subplot(122)
-#plt.title('Linear Compresioned Signal')
-#spectrogram_lib(data_comp, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.savefig('figures/lin_comp_spec.pdf')
-
-
-#Nonlinear compresion
-tau_non = 1.5
-comp_non_start = 1000
-data_comp_non, comp_non = nonlinear_freq_comp_short(data_down, comp_non_start, tau_non, fs/down_with, number_samp)
-librosa.output.write_wav('sound/Forsoeg/Nonlinear_Compression/nonlincomp_lyd_5.wav', data_comp_non, int(fs/down_with))
-#plt.figure(figsize = (16,5))
-#plt.subplot(121)
-#plt.title('Original Signal')
-#spectrogram_lib(data_down, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.subplot(122)
-#plt.title('Nonlinear Compresioned Signal')
-#spectrogram_lib(data_comp_non, fs/down_with, n_fft=int(2048/2), hop_length=512, window='hamming')
-#plt.savefig('figures/nonlin_comp_spec.pdf')
 
